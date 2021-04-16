@@ -1,6 +1,4 @@
 use crate::core::context::*;
-use vulkano as vk;
-use vulkano_win::VkSurfaceBuild;
 use winit::{event::{Event, WindowEvent}, event_loop::{ControlFlow, EventLoop}, window::{Window, WindowBuilder}};
 
 pub type Result<T> = std::result::Result<T, AppError>;

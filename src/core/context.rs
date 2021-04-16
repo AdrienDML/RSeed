@@ -1,5 +1,4 @@
-use vulkano as vk;
-use vulkano_win;
+use ash::{vk, Entry, version::EntryV1_0};
 #[derive(Clone, Debug)]
 pub enum ContextError {
     NoInstance(vk::instance::InstanceCreationError),
@@ -8,40 +7,17 @@ pub enum ContextError {
 }
 
 pub struct VkContext {
-    pub instance : std::sync::Arc<vk::instance::Instance>,
-    pub device : std::sync::Arc<vk::device::Device>,
-    pub queues : vk::device::QueuesIter, 
+
 }
 
 impl VkContext {
-    pub fn init() -> Result<Self, ContextError> {
-        let instance = match vk::instance::Instance::new(None, &vulkano_win::required_extensions(), None) {
-            Ok(i) => i,
-            Err(err) => return Err(ContextError::NoInstance(err)),
-        };
-        let mut phys_devs = vk::instance::PhysicalDevice::enumerate(&instance);
-
-        // TODO : better choice of the device.
-        let chosen_device = match phys_devs.next() {
-            Some(dev) => dev,
-            None => return Err(ContextError::NoPhysicalDevice),
-        };
-        
-        // TODO : Get a good choice of queues
-        let (device, queues) = {
-            let queue_family = chosen_device.queue_families().next().unwrap();
-            let feature = vk::device::Features::none();
-            let ext = vk::device::DeviceExtensions::none();
-            match vk::device::Device::new(chosen_device, &feature, &ext, Some((queue_family, 1.0))) {
-                Ok(d) => d,
-                Err(err) => return Err(ContextError::PhysicalDeviceCreation(err)),
-            }
-        };
-        Ok( Self {
-                instance : instance.clone(),
-                device,
-                queues,
-            }
-        )
+    pub fn init() {
+        let entry = unsafe {Entry::new().expect("Library loading failed!")};
+        let app_info = vk::ApplicationInfo::builder()
+            .application_version(vk::make_version(2,0,0))
+            .engine_version(vk::make_version(0, 0, 1))
+            .api_version(vk::make_version(1, 0, 106))
+            .application_name(&std::ffi::CString::new("Unknown app.").unwrap())
+            .engine_name(&std::ffi::CString::new("rseed.").unwrap());
     }
 }
