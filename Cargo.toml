@@ -1,11 +1,17 @@
 [package]
 name = "rseed"
 version = "0.1.0"
-authors = ["Derobert <adriendml99@gmail.com>"]
+authors = ["AdrienDML <adriendml99@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 ash = "*"
+rseed_log = {path = "lib/rseed_log"}
 winit = "0.24.0"
+raw-window-handle = "0.3.3"
+
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+raw-window-metal = "0.1"
