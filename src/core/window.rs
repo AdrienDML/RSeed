@@ -1,9 +1,9 @@
 use ash::{
-    vk,
     extensions::khr,
     version::{EntryV1_0, InstanceV1_0},
+    vk,
 };
-pub use raw_window_handle::{RawWindowHandle, HasRawWindowHandle};
+pub use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use ash::extensions::ext; // portability extensions
@@ -14,8 +14,6 @@ pub enum WindowError {
     SurfaceCreationFailed(vk::Result),
 }
 pub type Result<T> = std::result::Result<T, WindowError>;
-
-
 
 /// Returns all the vulkan extension to load for each platform
 pub unsafe fn query_surface_required_extentions(
@@ -61,7 +59,11 @@ pub unsafe fn query_surface_required_extentions(
         #[cfg(any(target_os = "ios"))]
         RawWindowHandle::IOS(_) => vec![khr::Surface::name(), ext::MetalSurface::name()],
 
-        _ => return Err(WindowError::ExtensionNotPresent(vk::Result::ERROR_EXTENSION_NOT_PRESENT)),
+        _ => {
+            return Err(WindowError::ExtensionNotPresent(
+                vk::Result::ERROR_EXTENSION_NOT_PRESENT,
+            ))
+        }
     };
 
     Ok(extensions)
@@ -120,7 +122,6 @@ where
             surface_fn
                 .create_xlib_surface(&surface_desc, allocation_callbacks)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
-
         }
 
         #[cfg(any(
@@ -146,8 +147,8 @@ where
                 vk::AndroidSurfaceCreateInfoKHR::builder().window(handle.a_native_window as _);
             let surface_fn = ash::extensions::khr::AndroidSurface::new(entry, instance);
             surface_fn
-            .create_android_surface(&surface_desc, allocation_callbacks)
-            .map_err(|e| WindowError::SurfaceCreationFailed(e))
+                .create_android_surface(&surface_desc, allocation_callbacks)
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(target_os = "macos"))]

@@ -3,8 +3,6 @@ use std::str::FromStr;
 use crate::core::context::*;
 use rseed_log::Logger;
 
-
-
 use winit::{
     self,
     event::{Event, WindowEvent},
@@ -20,10 +18,10 @@ pub enum AppError {
 }
 
 pub struct App {
-    pub logger : Logger,
+    pub logger: Logger,
     pub context: VkContext,
     pub event_loop: EventLoop<()>,
-    pub window : Window,
+    pub window: Window,
     //pub surface: std::sync::Arc<vk::swapchain::Surface<Window>>,
 }
 
@@ -33,13 +31,15 @@ impl App {
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new()
             .with_resizable(false)
-            .with_inner_size(winit::dpi::Size::Physical(winit::dpi::PhysicalSize::new(600,600)))
+            .with_inner_size(winit::dpi::Size::Physical(winit::dpi::PhysicalSize::new(
+                600, 600,
+            )))
             .build(&event_loop)
             .unwrap();
-        
+
         // Create the Vulkan context
-        let context = unsafe { VkContext::init(String::from("Test"), (0,0,1).into(), &window).unwrap() };
-        
+        let context =
+            unsafe { VkContext::init(String::from("Test"), (0, 0, 1).into(), &window).unwrap() };
 
         Ok(Self {
             logger,

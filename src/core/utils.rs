@@ -1,8 +1,7 @@
-
 pub struct Version {
-    pub major : u32,
-    pub minor : u32,
-    pub patch : u32,
+    pub major: u32,
+    pub minor: u32,
+    pub patch: u32,
 }
 
 impl Into<u32> for Version {
@@ -12,12 +11,12 @@ impl Into<u32> for Version {
     }
 }
 
-impl From<(u32,u32,u32)> for Version {
-    fn from(tuple: (u32,u32,u32)) -> Self {
+impl From<(u32, u32, u32)> for Version {
+    fn from(tuple: (u32, u32, u32)) -> Self {
         Self {
-            major : tuple.0,
-            minor : tuple.1,
-            patch : tuple.2,
+            major: tuple.0,
+            minor: tuple.1,
+            patch: tuple.2,
         }
     }
 }
