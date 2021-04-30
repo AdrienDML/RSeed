@@ -9,17 +9,18 @@ pub use raw_window_handle::{RawWindowHandle, HasRawWindowHandle};
 use ash::extensions::ext; // portability extensions
 
 #[derive(Clone, Debug)]
-pub enum Error {
+pub enum WindowError {
     ExtensionNotPresent(vk::Result),
     SurfaceCreationFailed(vk::Result),
 }
+pub type Result<T> = std::result::Result<T, WindowError>;
 
 
 
 /// Returns all the vulkan extension to load for each platform
 pub unsafe fn query_surface_required_extentions(
     window_handle: &dyn HasRawWindowHandle,
-) -> Result<Vec<&'static std::ffi::CStr>, Error> {
+) -> Result<Vec<&'static std::ffi::CStr>> {
     let extensions = match window_handle.raw_window_handle() {
         #[cfg(target_os = "windows")]
         RawWindowHandle::Windows(_) => vec![khr::Surface::name(), khr::Win32Surface::name()],
@@ -60,7 +61,7 @@ pub unsafe fn query_surface_required_extentions(
         #[cfg(any(target_os = "ios"))]
         RawWindowHandle::IOS(_) => vec![khr::Surface::name(), ext::MetalSurface::name()],
 
-        _ => return Err(Error::ExtensionNotPresent(vk::Result::ERROR_EXTENSION_NOT_PRESENT)),
+        _ => return Err(WindowError::ExtensionNotPresent(vk::Result::ERROR_EXTENSION_NOT_PRESENT)),
     };
 
     Ok(extensions)
@@ -70,7 +71,7 @@ pub unsafe fn create_surface<E, I>(
     entry: &E,
     instance: &I,
     window_handle: &dyn HasRawWindowHandle,
-) -> Result<vk::SurfaceKHR, Error>
+) -> Result<vk::SurfaceKHR>
 where
     E: EntryV1_0,
     I: InstanceV1_0,
@@ -84,7 +85,7 @@ where
             let surface_fn = ash::extensions::khr::Win32Surface::new(entry, instance);
             surface_fn
                 .create_win32_surface(&surface_desc, None)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(
@@ -101,7 +102,7 @@ where
             let surface_fn = ash::extensions::khr::WaylandSurface::new(entry, instance);
             surface_fn
                 .create_wayland_surface(&surface_desc, allocation_callbacks)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(
@@ -118,7 +119,7 @@ where
             let surface_fn = ash::extensions::khr::XlibSurface::new(entry, instance);
             surface_fn
                 .create_xlib_surface(&surface_desc, allocation_callbacks)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
 
         }
 
@@ -136,7 +137,7 @@ where
             let surface_fn = ash::extensions::khr::XcbSurface::new(entry, instance);
             surface_fn
                 .create_xcb_surface(&surface_desc, allocation_callbacks)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(target_os = "android"))]
@@ -146,7 +147,7 @@ where
             let surface_fn = ash::extensions::khr::AndroidSurface::new(entry, instance);
             surface_fn
             .create_android_surface(&surface_desc, allocation_callbacks)
-            .map_err(|e| Error::SurfaceCreationFailed(e))
+            .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(target_os = "macos"))]
@@ -162,7 +163,7 @@ where
             let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
             surface_fn
                 .create_metal_surface(&surface_desc, allocation_callbacks)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
         #[cfg(any(target_os = "ios"))]
@@ -178,10 +179,10 @@ where
             let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
             surface_fn
                 .create_metal_surface(&surface_desc, allocation_callbacks)
-                .map_err(|e| Error::SurfaceCreationFailed(e))
+                .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
-        _ => Err(Error::ExtensionNotPresent(
+        _ => Err(WindowError::ExtensionNotPresent(
             vk::Result::ERROR_EXTENSION_NOT_PRESENT,
         )),
     }
