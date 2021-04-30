@@ -1,23 +1,35 @@
 use ash::{Entry, Instance, version::{EntryV1_0, InstanceV1_0}, vk};
-use consts::ENGINE_VERSION;
-use rseed_log::time;
-use super::{consts, utils::Version};
 
-use raw_window_handle::{RawWindowHandle, HasRawWindowHandle};
+use rseed_log::time;
+
+use consts::ENGINE_VERSION;
+use super::{
+    consts,
+    utils::Version,
+    window::{
+        self,
+        HasRawWindowHandle,
+    }
+};
+
 
 #[derive(Clone, Debug)]
 pub enum ContextError {
     LibLoadFail,
     NoInstance(ash::InstanceError),
-    SurfaceCreation(vk::Result),
+    Extention(window::Error),
+    SurfaceCreation(window::Error),
+    Physical(vk::Result),
 }
 
 pub struct VkContext {
+    entry : Entry,
     instance: Instance,
+
 }
 
 impl VkContext {
-    pub unsafe fn init(app_name : String, app_version : Version) -> Result<Self, ContextError> {
+    pub unsafe fn init(app_name : String, app_version : Version, window_handle: &dyn HasRawWindowHandle) -> Result<Self, ContextError> {
         let entry = Entry::new().map_err(|_| ContextError::LibLoadFail)?;
         
         let app_name = std::ffi::CString::new(app_name).unwrap();
@@ -29,15 +41,16 @@ impl VkContext {
             .application_name(&app_name)
             .engine_name(&engine_name);
 
-        let layer_names:Vec<std::ffi::CString>  = Self::query_layers()?;
-        let layer_pointer: Vec<*const i8> = layer_names.iter()
+        let layer_names : Vec<std::ffi::CString>  = Self::query_layers()?;
+        let layer_pointer : Vec<*const i8> = layer_names.iter()
             .map(|l| l.as_ptr())
             .collect();
 
-        let extension_names = Self::query_required_extentions()?;
+        let extension_names = window::query_surface_required_extentions(window_handle)
+            .map_err(|e | ContextError::Extention(e))?;
         let extension_pointers : Vec<*const i8> = extension_names.iter()
-            .map(|name| name.as_ptr())
-            .collect();
+           .map(|name| name.as_ptr())
+           .collect();
         let mut debugcreateinfo = Self::create_debug_callback();
         let create_info = vk::InstanceCreateInfo::builder()
             .push_next(&mut debugcreateinfo)
@@ -47,7 +60,54 @@ impl VkContext {
         let instance = entry
             .create_instance(&create_info, None)
             .map_err(|e| ContextError::NoInstance(e))?;
-        Ok(Self { instance })
+        
+
+        let surface = window::create_surface(&entry, &instance, window_handle).map_err(|e|
+                match e {
+                    window::Error::ExtensionNotPresent(_) => ContextError::Extention(e),
+                    window::Error::SurfaceCreationFailed(_) => ContextError::SurfaceCreation(e),
+                }
+            )?;
+        
+        let (device, device_prop) = Self::chose_device(&instance)?;
+        let device_name = std::ffi::CStr::from_ptr(device_prop.device_name.as_ptr()).to_str().unwrap();
+        println!("{}", device_name);
+        Ok(Self { 
+            entry,
+            instance,
+        })
+    }
+
+    fn chose_device(instance : &ash::Instance) 
+        -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties), ContextError>
+    {
+        let phys_devs = unsafe {
+            instance.enumerate_physical_devices()
+                .map_err(|e| ContextError::Physical(e))?
+        };
+    
+        let mut chosen = None;
+        for p in phys_devs {
+            let props = unsafe{instance.get_physical_device_properties(p)};
+            if props.device_type == vk::PhysicalDeviceType::DISCRETE_GPU {
+                let device_name = unsafe {std::ffi::CStr::from_ptr(props.device_name.as_ptr()).to_str().unwrap()};
+                println!("{}", device_name);
+                chosen = Some((p, props));
+            }
+            else if props.device_type == vk::PhysicalDeviceType::INTEGRATED_GPU {
+                match chosen {
+                    Some((_, prop)) => if prop.device_type != vk::PhysicalDeviceType::DISCRETE_GPU {
+                        chosen = Some((p, props))
+                    },
+                    None => chosen = Some((p, props)),
+                }
+            }
+        }
+        chosen.ok_or(ContextError::Physical(vk::Result::ERROR_INITIALIZATION_FAILED))
+    }
+
+    fn create_logical_device(instance : &ash::Instance, device : &vk::PhysicalDevice) {
+        
     }
 
     fn query_layers() -> Result<Vec<std::ffi::CString>, ContextError> {
@@ -55,42 +115,7 @@ impl VkContext {
         Ok(layers)
     }
 
-    fn query_required_extentions() -> Result<Vec<&'static std::ffi::CStr>, ContextError> {
-        use ash::extensions as ext;
-        let mut exts = Vec::new();
-        exts.push(ext::ext::DebugUtils::name());
-        exts.push(ext::khr::Surface::name());
-        #[cfg(target_os = "windows")]
-        exts.push(ext::khr::Win32Surface::name());
-        
-        #[cfg(any(
-            target_os = "linux",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "netbsd",
-            target_os = "openbsd"
-        ))]
-        exts.push(ext::khr::XlibSurface::name());
-
-        #[cfg(any(
-            target_os = "linux",
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "netbsd",
-            target_os = "openbsd"
-        ))]
-        exts.push(ext::khr::XcblibSurface::name());
-
-        #[cfg(any(target_os = "android"))]
-        exts.push(ext::khr::AndroidSurface::name());
-            
-
-        #[cfg(any(target_os = "macos", target_os = "ios"))]
-        exts.push(ext::ext::MetalSurface::name());
-        return Ok(exts);
-    }
-
-    fn create_debug_callback<'a>() -> vk::DebugUtilsMessengerCreateInfoEXTBuilder<'a> {
+     fn create_debug_callback<'a>() -> vk::DebugUtilsMessengerCreateInfoEXTBuilder<'a> {
         fn into_log_level(severity : vk::DebugUtilsMessageSeverityFlagsEXT) -> usize {
             if severity.intersects(vk::DebugUtilsMessageSeverityFlagsEXT::ERROR) { 3 }
             else if severity.intersects(vk::DebugUtilsMessageSeverityFlagsEXT::WARNING) { 2 }
@@ -140,105 +165,6 @@ impl VkContext {
             .pfn_user_callback(Some(vulkan_debug_utils_callback))
     }
 
-    unsafe fn create_surface<E, I>(entry : &E , instance : &I, window_handle : &dyn HasRawWindowHandle) -> Result<vk::SurfaceKHR, ContextError>
-    where
-        E : EntryV1_0,
-        I : InstanceV1_0,
-    {
-        match window_handle.raw_window_handle()  {
-            #[cfg(target_os = "windows")]
-            RawWindowHandle::Windows(handle) => {
-                let surface_desc = vk::Win32SurfaceCreateInfoKHR::builder()
-                    .hinstance(handle.hinstance)
-                    .hwnd(handle.hwnd);
-                let surface_fn = ash::extensions::khr::Win32Surface::new(entry, instance);
-                surface_fn.create_win32_surface(&surface_desc, None).map_err(|e| ContextError::SurfaceCreation(e))
-            }
-    
-            #[cfg(any(
-                target_os = "linux",
-                target_os = "dragonfly",
-                target_os = "freebsd",
-                target_os = "netbsd",
-                target_os = "openbsd"
-            ))]
-            RawWindowHandle::Wayland(handle) => {
-                let surface_desc = vk::WaylandSurfaceCreateInfoKHR::builder()
-                    .display(handle.display)
-                    .surface(handle.surface);
-                let surface_fn = ash::extensions::khr::WaylandSurface::new(entry, instance);
-                surface_fn.create_wayland_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            #[cfg(any(
-                target_os = "linux",
-                target_os = "dragonfly",
-                target_os = "freebsd",
-                target_os = "netbsd",
-                target_os = "openbsd"
-            ))]
-            RawWindowHandle::Xlib(handle) => {
-                let surface_desc = vk::XlibSurfaceCreateInfoKHR::builder()
-                    .dpy(handle.display as *mut _)
-                    .window(handle.window);
-                let surface_fn = ash::extensions::khr::XlibSurface::new(entry, instance);
-                surface_fn.create_xlib_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            #[cfg(any(
-                target_os = "linux",
-                target_os = "dragonfly",
-                target_os = "freebsd",
-                target_os = "netbsd",
-                target_os = "openbsd"
-            ))]
-            RawWindowHandle::Xcb(handle) => {
-                let surface_desc = vk::XcbSurfaceCreateInfoKHR::builder()
-                    .connection(handle.connection as *mut _)
-                    .window(handle.window);
-                let surface_fn = ash::extensions::khr::XcbSurface::new(entry, instance);
-                surface_fn.create_xcb_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            #[cfg(any(target_os = "android"))]
-            RawWindowHandle::Android(handle) => {
-                let surface_desc =
-                    vk::AndroidSurfaceCreateInfoKHR::builder().window(handle.a_native_window as _);
-                let surface_fn = ash::extensions::khr::AndroidSurface::new(entry, instance);
-                surface_fn.create_android_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            #[cfg(any(target_os = "macos"))]
-            RawWindowHandle::MacOS(handle) => {
-                use raw_window_metal::{macos, Layer};
-    
-                let layer = match macos::metal_layer_from_handle(handle) {
-                    Layer::Existing(layer) | Layer::Allocated(layer) => layer as *mut _,
-                    Layer::None => return Err(vk::Result::ERROR_INITIALIZATION_FAILED),
-                };
-    
-                let surface_desc = vk::MetalSurfaceCreateInfoEXT::builder().layer(&*layer);
-                let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
-                surface_fn.create_metal_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            #[cfg(any(target_os = "ios"))]
-            RawWindowHandle::IOS(handle) => {
-                use raw_window_metal::{ios, Layer};
-    
-                let layer = match ios::metal_layer_from_handle(handle) {
-                    Layer::Existing(layer) | Layer::Allocated(layer) => layer as *mut _,
-                    Layer::None => return Err(vk::Result::ERROR_INITIALIZATION_FAILED),
-                };
-    
-                let surface_desc = vk::MetalSurfaceCreateInfoEXT::builder().layer(&*layer);
-                let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
-                surface_fn.create_metal_surface(&surface_desc, allocation_callbacks)
-            }
-    
-            _ => Err(ContextError::SurfaceCreation(vk::Result::ERROR_EXTENSION_NOT_PRESENT)),
-        }
-    }
 }
 
 impl Drop for VkContext {

@@ -3,7 +3,10 @@ use std::str::FromStr;
 use crate::core::context::*;
 use rseed_log::Logger;
 
+
+
 use winit::{
+    self,
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
     window::{Window, WindowBuilder},
@@ -17,32 +20,36 @@ pub enum AppError {
 }
 
 pub struct App {
+    pub logger : Logger,
     pub context: VkContext,
     pub event_loop: EventLoop<()>,
-    //pub window : Window,
+    pub window : Window,
     //pub surface: std::sync::Arc<vk::swapchain::Surface<Window>>,
 }
 
 impl App {
     pub fn init() -> Result<Self> {
-        let _logger = Logger::new(String::from_str("RS-eed").unwrap());
-        let context = unsafe { VkContext::init(String::from("Test"), (0,0,1).into()).unwrap() };
+        let logger = Logger::new(String::from_str("RS-eed").unwrap());
         let event_loop = EventLoop::new();
-        //let surface = ash_window::;
-        //    .unwrap();
-        //let window = surface.build(&event_loop).unwrap();
+        let window = WindowBuilder::new()
+            .with_resizable(false)
+            .with_inner_size(winit::dpi::Size::Physical(winit::dpi::PhysicalSize::new(600,600)))
+            .build(&event_loop)
+            .unwrap();
+        
+        // Create the Vulkan context
+        let context = unsafe { VkContext::init(String::from("Test"), (0,0,1).into(), &window).unwrap() };
+        
+
         Ok(Self {
+            logger,
             context,
             event_loop,
-            //window,
+            window,
         })
     }
 
     pub fn run(self) {
-        let mut should_quit = false;
-        while !should_quit {
-            self.event_loop.poll
-        }
         self.event_loop.run(|event, _, cf| match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,

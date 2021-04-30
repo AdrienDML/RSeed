@@ -1,6 +1,8 @@
 use std::fmt::{Debug};
 use crate::color::*;
 use crate::time;
+
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum LogLevel {
     TRACE,
