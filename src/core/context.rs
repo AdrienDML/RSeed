@@ -1,4 +1,4 @@
-use ash::{Entry, Instance, version::{EntryV1_0, InstanceV1_0}, vk};
+use ash::{Entry, Instance, version::{DeviceV1_0, EntryV1_0, InstanceV1_0}, vk};
 
 use rseed_log::time;
 
@@ -17,21 +17,31 @@ use super::{
 pub enum ContextError {
     LibLoadFail,
     NoInstance(ash::InstanceError),
-    Extention(window::Error),
-    SurfaceCreation(window::Error),
-    Physical(vk::Result),
+    Extention(window::WindowError),
+    SurfaceCreation(window::WindowError),
+    PhysicalDeviceCreation(vk::Result),
+    LogicalDeviceCreation(vk::Result),
 }
 
 pub struct VkContext {
     entry : Entry,
     instance: Instance,
 
+    phys_device : vk::PhysicalDevice,
+    log_device : ash::Device,
+    graphic_queue : vk::Queue, 
+    transfert_queue : vk::Queue, 
+    compute_queue : vk::Queue,
+    surface : vk::SurfaceKHR,
 }
 
+pub type Result<T> = std::result::Result<T, ContextError>;
+
 impl VkContext {
-    pub unsafe fn init(app_name : String, app_version : Version, window_handle: &dyn HasRawWindowHandle) -> Result<Self, ContextError> {
+    pub unsafe fn init(app_name : String, app_version : Version, window_handle: &dyn HasRawWindowHandle) -> Result<Self> {
         let entry = Entry::new().map_err(|_| ContextError::LibLoadFail)?;
         
+        // Instance creation
         let app_name = std::ffi::CString::new(app_name).unwrap();
         let engine_name = std::ffi::CString::new(consts::ENGINE_NAME).unwrap();
         let app_info = vk::ApplicationInfo::builder()
@@ -51,6 +61,7 @@ impl VkContext {
         let extension_pointers : Vec<*const i8> = extension_names.iter()
            .map(|name| name.as_ptr())
            .collect();
+        // Adding Debug call back
         let mut debugcreateinfo = Self::create_debug_callback();
         let create_info = vk::InstanceCreateInfo::builder()
             .push_next(&mut debugcreateinfo)
@@ -61,29 +72,36 @@ impl VkContext {
             .create_instance(&create_info, None)
             .map_err(|e| ContextError::NoInstance(e))?;
         
-
+        // Device creation
+        let (phys_device, device_prop) = Self::chose_device(&instance)?;
+        let (log_device, graphic_queue, transfert_queue, compute_queue) = Self::create_logical_device(&instance, &phys_device, &layer_pointer)?;
+        // Surface creation
         let surface = window::create_surface(&entry, &instance, window_handle).map_err(|e|
                 match e {
-                    window::Error::ExtensionNotPresent(_) => ContextError::Extention(e),
-                    window::Error::SurfaceCreationFailed(_) => ContextError::SurfaceCreation(e),
+                    window::WindowError::ExtensionNotPresent(_) => ContextError::Extention(e),
+                    window::WindowError::SurfaceCreationFailed(_) => ContextError::SurfaceCreation(e),
                 }
             )?;
         
-        let (device, device_prop) = Self::chose_device(&instance)?;
-        let device_name = std::ffi::CStr::from_ptr(device_prop.device_name.as_ptr()).to_str().unwrap();
-        println!("{}", device_name);
+        
         Ok(Self { 
             entry,
             instance,
+            phys_device,
+            log_device,
+            graphic_queue, 
+            transfert_queue, 
+            compute_queue,
+            surface,
         })
     }
 
     fn chose_device(instance : &ash::Instance) 
-        -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties), ContextError>
+        -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties)>
     {
         let phys_devs = unsafe {
             instance.enumerate_physical_devices()
-                .map_err(|e| ContextError::Physical(e))?
+                .map_err(|e| ContextError::PhysicalDeviceCreation(e))?
         };
     
         let mut chosen = None;
@@ -103,14 +121,74 @@ impl VkContext {
                 }
             }
         }
-        chosen.ok_or(ContextError::Physical(vk::Result::ERROR_INITIALIZATION_FAILED))
+        chosen.ok_or(ContextError::PhysicalDeviceCreation(vk::Result::ERROR_INITIALIZATION_FAILED))
     }
 
-    fn create_logical_device(instance : &ash::Instance, device : &vk::PhysicalDevice) {
-        
+    fn create_logical_device(instance : &ash::Instance, phys_device : &vk::PhysicalDevice, enabled_layer_ptr : &Vec<*const i8>) -> Result<(ash::Device, vk::Queue, vk::Queue, vk::Queue)>{
+        let queue_fam_props = unsafe {instance.get_physical_device_queue_family_properties(*phys_device)};
+        let qfam_inds = {
+            let mut g_q = None;
+            let mut t_q = None;
+            let mut c_q = None;
+            for (index, qfam) in queue_fam_props.iter().enumerate() 
+            {
+                if qfam.queue_count > 0 && qfam.queue_flags.contains(vk::QueueFlags::GRAPHICS)
+                {
+                    println!("fond g_q");
+                    g_q = Some(index as u32);
+                }
+                if qfam.queue_count > 0 && qfam.queue_flags.contains(vk::QueueFlags::TRANSFER)
+                {
+                    if t_q.is_none() 
+                        && !(qfam.queue_flags.contains(vk::QueueFlags::GRAPHICS) && qfam.queue_flags.contains(vk::QueueFlags::COMPUTE))
+                    {
+                        println!("fond t_q");
+                        t_q = Some(index as u32);
+                    }
+                }
+                if qfam.queue_count > 0 && qfam.queue_flags.contains(vk::QueueFlags::COMPUTE)
+                {
+                    if c_q.is_none()
+                        && !(qfam.queue_flags.contains(vk::QueueFlags::GRAPHICS) && qfam.queue_flags.contains(vk::QueueFlags::TRANSFER))
+                    {
+                        println!("fond c_q");
+                        c_q = Some(index as u32);
+                    }
+                }
+
+            }
+            (g_q.unwrap(), t_q.unwrap(), c_q.unwrap())
+        };
+
+        let priorities = [1.0f32];
+        let queues_info = [
+            vk::DeviceQueueCreateInfo::builder()
+                .queue_family_index(qfam_inds.0)
+                .queue_priorities(&priorities)
+                .build(),
+            vk::DeviceQueueCreateInfo::builder()
+                .queue_family_index(qfam_inds.1)
+                .queue_priorities(&priorities)
+                .build(),
+            vk::DeviceQueueCreateInfo::builder()
+                .queue_family_index(qfam_inds.2)
+                .queue_priorities(&priorities)
+                .build()
+        ];
+        let device_info = vk::DeviceCreateInfo::builder()
+            .queue_create_infos(&queues_info)
+            .enabled_layer_names(enabled_layer_ptr);
+        let device = unsafe {
+            instance.create_device(*phys_device, &device_info, None)
+                .map_err(|e| ContextError::LogicalDeviceCreation(e))
+        }?;
+        let graphic_queue = unsafe {device.get_device_queue(qfam_inds.0, 0)};
+        let transfert_queue = unsafe {device.get_device_queue(qfam_inds.1, 0)};
+        let compute_queue = unsafe {device.get_device_queue(qfam_inds.2, 0)};
+        Ok((device, graphic_queue, transfert_queue, compute_queue))
     }
 
-    fn query_layers() -> Result<Vec<std::ffi::CString>, ContextError> {
+    fn query_layers() -> Result<Vec<std::ffi::CString>> {
         let layers = vec![std::ffi::CString::new("VK_LAYER_KHRONOS_validation").unwrap()];
         Ok(layers)
     }
@@ -171,6 +249,7 @@ impl Drop for VkContext {
     fn drop(&mut self) {
         unsafe {
             self.instance.destroy_instance(None);
+            self.log_device.destroy_device(None);
         }
     }
 }
