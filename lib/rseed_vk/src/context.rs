@@ -48,19 +48,18 @@ impl VkContext {
         app_version: Version,
         window_handle: &dyn HasRawWindowHandle,
     ) -> Result<Self> {
-        use ContextError::*;
         let entry = Entry::new().map_err(|_| ContextError::LibLoadFail)?;
         let layer_names = Self::query_layers()?;
         //instance creation
         let instance = Self::create_instance(&entry, window_handle, app_name, app_version)?;
 
         let surface = Surface::init(&entry, &instance, window_handle)
-            .map_err(|e| Surface(e))?;
+            .map_err(|e| ContextError::Surface(e))?;
 
         // Device creation
-        let device = Device::init(&instance, &surface, &layer_names).map_err(|e| Device(e))?;
+        let device = Device::init(&instance, &surface, &layer_names).map_err(|e| ContextError::Device(e))?;
 
-        let swapchain = Swapchain::init(&instance, &device, &surface).map_err(|e| Swapchain(e))?;
+        let swapchain = Swapchain::init(&instance, &device, &surface).map_err(|e| ContextError::Swapchain(e))?;
 
         Ok(Self {
             entry,
