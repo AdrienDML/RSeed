@@ -38,8 +38,8 @@ pub unsafe extern "system" fn vulkan_debug_utils_callback(
 }
 
 pub struct DebugMessenger {
-    loader : ash::extensions::ext::DebugUtils,
-    messenger : vk::DebugUtilsMessengerEXT,
+    pub loader : ash::extensions::ext::DebugUtils,
+    pub messenger : vk::DebugUtilsMessengerEXT,
 }
 
 fn into_log_level(severity: vk::DebugUtilsMessageSeverityFlagsEXT) -> usize {
@@ -58,8 +58,8 @@ fn into_log_level(severity: vk::DebugUtilsMessageSeverityFlagsEXT) -> usize {
 
 impl DebugMessenger {
 
-    fn init(entry : &Entry, instance : &Instance, log_level : usize) -> Result<Self> {
-        let debug_create_info = Self::create_debug_utils_messenger(log_level);
+    pub fn init(entry : &Entry, instance : &Instance, _log_level : impl Into<usize>) -> Result<Self> {
+        let debug_create_info = Self::create_debug_utils_messenger(_log_level);
         
         let loader = ash::extensions::ext::DebugUtils::new(entry, instance);
         let messenger = unsafe {
@@ -73,12 +73,20 @@ impl DebugMessenger {
         })
     }
 
-    pub fn create_debug_utils_messenger<'a>(log_level : usize) -> vk::DebugUtilsMessengerCreateInfoEXTBuilder<'a>
+    pub fn create_debug_utils_messenger<'a>(_log_level : impl Into<usize>) -> vk::DebugUtilsMessengerCreateInfoEXTBuilder<'a>
     {
-        let message_severity = vk::DebugUtilsMessageSeverityFlagsEXT::WARNING
-        | vk::DebugUtilsMessageSeverityFlagsEXT::VERBOSE
-        | vk::DebugUtilsMessageSeverityFlagsEXT::INFO
-        | vk::DebugUtilsMessageSeverityFlagsEXT::ERROR;
+        let mut message_severity = vk::DebugUtilsMessageSeverityFlagsEXT::ERROR;
+        let log_level : usize = _log_level.into();
+        if log_level < 3usize {
+            message_severity |= vk::DebugUtilsMessageSeverityFlagsEXT::WARNING;
+        }
+        if log_level < 2usize {
+            message_severity |= vk::DebugUtilsMessageSeverityFlagsEXT::INFO;
+        }
+        if log_level < 1usize {
+            message_severity |= vk::DebugUtilsMessageSeverityFlagsEXT::VERBOSE;
+        }
+
         let message_type = vk::DebugUtilsMessageTypeFlagsEXT::GENERAL
             | vk::DebugUtilsMessageTypeFlagsEXT::PERFORMANCE
             | vk::DebugUtilsMessageTypeFlagsEXT::VALIDATION;
