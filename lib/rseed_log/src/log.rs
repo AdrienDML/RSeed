@@ -1,6 +1,6 @@
 use std::fmt::{Debug};
+use rseed_core::time;
 use crate::color::*;
-use crate::time;
 
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -9,7 +9,6 @@ pub enum LogLevel {
     INFO,
     WARN,
     ERROR,
-    FATAL,
 }
 
 impl Into<usize> for LogLevel {
@@ -19,7 +18,6 @@ impl Into<usize> for LogLevel {
             Self::INFO => 1,
             Self::WARN => 2,
             Self::ERROR => 3,
-            Self::FATAL => 3,
         }
     }
 }
@@ -31,7 +29,6 @@ impl std::fmt::Display for LogLevel {
             Self::INFO => write!(f, "Info"),
             Self::WARN => write!(f, "Warn"),
             Self::ERROR => write!(f, "Error"),
-            Self::FATAL => write!(f, "Fatal"),
         }
     }
 }
@@ -90,13 +87,6 @@ impl Logger {
             content,
         );
     }
-    pub fn fatal<T: Debug>(&self, content: &T) -> ! {
-        self.log(
-            LogLevel::FATAL,
-            &self.name,
-            content,
-        );
-        panic!()
-    }
+
 }
 

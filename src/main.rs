@@ -1,7 +1,5 @@
-pub mod app;
-pub mod core;
-
+use rseed_app::App;
 fn main() {
-    let application = app::App::init().unwrap();
+    let application = App::init(600, 600).unwrap();
     application.run();
 }

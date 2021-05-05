@@ -3,10 +3,3 @@
 [[package]]
 name = "rseed_core"
 version = "0.1.0"
-
-[[package]]
-name = "rseed_log"
-version = "0.1.0"
-dependencies = [
- "rseed_core",
-]

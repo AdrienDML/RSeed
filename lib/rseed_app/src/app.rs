@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::core::context::*;
+use rseed_vk::context::*;
 use rseed_log::Logger;
 
 use winit::{
@@ -26,13 +26,13 @@ pub struct App {
 }
 
 impl App {
-    pub fn init() -> Result<Self> {
+    pub fn init(width: u32, height: u32) -> Result<Self> {
         let logger = Logger::new(String::from_str("RS-eed").unwrap());
         let event_loop = EventLoop::new();
         let window = WindowBuilder::new()
             .with_resizable(false)
             .with_inner_size(winit::dpi::Size::Physical(winit::dpi::PhysicalSize::new(
-                600, 600,
+                width, height,
             )))
             .build(&event_loop)
             .unwrap();
