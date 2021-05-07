@@ -17,8 +17,8 @@ pub enum DeviceError {
 pub type Result<T> = std::result::Result<T, DeviceError>;
 
 pub struct Device {
-    pub physical_device : vk::PhysicalDevice,
-    pub logical_device : ash::Device,
+    pub physical : vk::PhysicalDevice,
+    pub logical : ash::Device,
     pub graphic_queue: vk::Queue,
     pub transfert_queue: vk::Queue,
     pub compute_queue: vk::Queue,
@@ -32,13 +32,13 @@ impl Device {
         surface : &Surface,
         layer_names : &Vec<std::ffi::CString>,
     ) -> Result<Self> {
-        let (physical_device, _device_prop) = Self::chose_device(&instance)?;
-        let (logical_device, graphic_queue, transfert_queue, compute_queue, queue_inds) =
-            Self::create_logical_device(&instance, &physical_device, surface, layer_names)?;
+        let (physical, _device_prop) = Self::chose_device(&instance)?;
+        let (logical, graphic_queue, transfert_queue, compute_queue, queue_inds) =
+            Self::create_logical_device(&instance, &physical, surface, layer_names)?;
 
         Ok(Self{
-            physical_device,
-            logical_device,
+            physical,
+            logical,
             graphic_queue, 
             transfert_queue,
             compute_queue,
@@ -172,7 +172,7 @@ impl Device {
 
 impl Drop for Device {
     fn drop(&mut self) {
-        unsafe {self.logical_device.destroy_device(None)};
+        unsafe {self.logical.destroy_device(None)};
     }
 }
 
