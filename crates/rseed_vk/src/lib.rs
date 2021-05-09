@@ -5,3 +5,4 @@ pub mod device;
 pub mod surface;
 pub mod swapchain;
 pub mod window;
+pub mod pipeline;

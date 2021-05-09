@@ -8,6 +8,7 @@ use super::{
 
 use rseed_core::utils::Version;
 
+
 #[derive(Clone, Debug)]
 pub enum ContextError {
     Library(LibraryError),
@@ -47,7 +48,9 @@ impl VkContext {
         // Swapchain
         let swapchain = Swapchain::init(&library, &device, &surface)
             .map_err(|e| ContextError::Swapchain(e))?;
-
+        
+        
+        
         Ok(Self {
             library,
             surface,
