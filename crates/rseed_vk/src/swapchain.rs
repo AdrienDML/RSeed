@@ -2,14 +2,11 @@ use ash::{
     self,
     extensions::khr,
     vk,
-    version::DeviceV1_0,
-    Instance,
 };
 
-use super::{
-    device::Device,
-    surface::Surface,
-};
+use super::library::*;
+use super::device::*;
+use super::surface::*;
 
 #[derive(Clone, Debug)]
 pub enum SwapchainError {
@@ -19,31 +16,29 @@ pub enum SwapchainError {
 
 pub type Result<T> = std::result::Result<T, SwapchainError>;
 
-
-pub struct Swapchain {
-    pub loader : khr::Swapchain,
-    pub khr : vk::SwapchainKHR,
-    pub images : Vec<vk::Image>,
-    pub views : Vec<vk::ImageView>,
-
+pub(crate) struct Swapchain {
+    pub loader: khr::Swapchain,
+    pub khr: vk::SwapchainKHR,
+    pub images: Vec<vk::Image>,
+    pub views: Vec<vk::ImageView>,
 }
 
 impl Swapchain {
-
     pub fn init(
-        instance : &Instance,
+        lib : &Library,
         device : &Device,
-        surface : &Surface,
+        surface: &Surface,
     ) -> Result<Self> {
-
         let surface_capabilities = unsafe {
-            surface.loader
+            surface
+                .loader
                 .get_physical_device_surface_capabilities(device.physical, surface.khr)
                 .map_err(|e| SwapchainError::Creation(e))?
         };
 
         let surface_formats = unsafe {
-            surface.loader
+            surface
+                .loader
                 .get_physical_device_surface_formats(device.physical, surface.khr)
                 .map_err(|e| SwapchainError::Creation(e))?
         };
@@ -66,7 +61,7 @@ impl Swapchain {
             .composite_alpha(vk::CompositeAlphaFlagsKHR::OPAQUE)
             .present_mode(vk::PresentModeKHR::FIFO);
 
-        let loader = khr::Swapchain::new(instance, &device.logical);
+        let loader = khr::Swapchain::new(&lib.instance, &device.logical);
         let khr = unsafe {
             loader
                 .create_swapchain(&swapchain_create_info, None)
@@ -82,9 +77,14 @@ impl Swapchain {
         })
     }
 
-    fn create_images(loader : &khr::Swapchain, khr : &vk::SwapchainKHR, device : &Device) -> Result<(Vec<vk::Image>, Vec<vk::ImageView>)> {
+    fn create_images(
+        loader: &khr::Swapchain,
+        khr: &vk::SwapchainKHR,
+        device: &Device,
+    ) -> Result<(Vec<vk::Image>, Vec<vk::ImageView>)> {
         let images = unsafe {
-            loader.get_swapchain_images(*khr)
+            loader
+                .get_swapchain_images(*khr)
                 .map_err(|e| SwapchainError::ImageCreation(e))?
         };
         let mut views = Vec::with_capacity(images.len());
@@ -101,13 +101,20 @@ impl Swapchain {
                 .format(vk::Format::B8G8R8A8_UNORM)
                 .subresource_range(*subressource_range);
             let view = unsafe {
-                device.logical
+                device
+                    .logical
                     .create_image_view(&view_create_info, None)
-                    .map_err(|e|  SwapchainError::ImageCreation(e))?
-                };
+                    .map_err(|e| SwapchainError::ImageCreation(e))?
+            };
             views.push(view);
-        } 
+        }
         Ok((images, views))
     }
 
+    pub fn drop(&mut self, device: &Device) {
+        for view in &self.views {
+            unsafe { device.logical.destroy_image_view(*view, None) };
+        }
+        unsafe { self.loader.destroy_swapchain(self.khr, None) };
+    }
 }

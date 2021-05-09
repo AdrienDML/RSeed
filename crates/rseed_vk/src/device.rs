@@ -1,12 +1,13 @@
 use ash::{
     self,
-    vk,
     extensions::khr,
-    version::{InstanceV1_0, DeviceV1_0},
-    Instance,
+    vk,
 };
 
-use super::surface::Surface;
+pub use ash::version::DeviceV1_0;
+
+use super::library::*;
+use super::surface::*;
 
 #[derive(Clone, Debug)]
 pub enum DeviceError {
@@ -16,9 +17,9 @@ pub enum DeviceError {
 
 pub type Result<T> = std::result::Result<T, DeviceError>;
 
-pub struct Device {
-    pub physical : vk::PhysicalDevice,
-    pub logical : ash::Device,
+pub(crate) struct Device {
+    pub physical: vk::PhysicalDevice,
+    pub logical: ash::Device,
     pub graphic_queue: vk::Queue,
     pub transfert_queue: vk::Queue,
     pub compute_queue: vk::Queue,
@@ -26,20 +27,18 @@ pub struct Device {
 }
 
 impl Device {
-
-    pub fn init(
-        instance : &Instance,
-        surface : &Surface,
-        layer_names : &Vec<std::ffi::CString>,
+    pub(crate) fn init(
+        lib: &Library,
+        surface: &Surface,
     ) -> Result<Self> {
-        let (physical, _device_prop) = Self::chose_device(&instance)?;
+        let (physical, _device_prop) = Self::chose_device(lib)?;
         let (logical, graphic_queue, transfert_queue, compute_queue, queue_inds) =
-            Self::create_logical_device(&instance, &physical, surface, layer_names)?;
+            Self::create_logical_device(lib, &physical, surface)?;
 
-        Ok(Self{
+        Ok(Self {
             physical,
             logical,
-            graphic_queue, 
+            graphic_queue,
             transfert_queue,
             compute_queue,
             queue_inds,
@@ -47,17 +46,17 @@ impl Device {
     }
 
     fn chose_device(
-        instance: &ash::Instance,
+        lib: &Library,
     ) -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties)> {
         let phys_devs = unsafe {
-            instance
+            lib.instance
                 .enumerate_physical_devices()
                 .map_err(|e| DeviceError::PhysicalCreation(e))?
         };
 
         let mut chosen = None;
         for p in phys_devs {
-            let props = unsafe { instance.get_physical_device_properties(p) };
+            let props = unsafe { lib.instance.get_physical_device_properties(p) };
             if props.device_type == vk::PhysicalDeviceType::DISCRETE_GPU {
                 chosen = Some((p, props));
             } else if props.device_type == vk::PhysicalDeviceType::INTEGRATED_GPU {
@@ -77,10 +76,9 @@ impl Device {
     }
 
     fn create_logical_device(
-        instance: &ash::Instance,
+        lib: &Library,
         physical_device: &vk::PhysicalDevice,
-        surface : &Surface,
-        layer_names : &Vec<std::ffi::CString>
+        surface: &Surface,
     ) -> Result<(
         ash::Device,
         vk::Queue,
@@ -88,9 +86,9 @@ impl Device {
         vk::Queue,
         (u32, u32, u32),
     )> {
-        let enabled_layer_ptr: Vec<*const i8> = layer_names.iter().map(|l| l.as_ptr()).collect();
+        let enabled_layer_ptr: Vec<*const i8> = lib.enabled_layers.iter().map(|l| l.as_ptr()).collect();
         let queue_fam_props =
-            unsafe { instance.get_physical_device_queue_family_properties(*physical_device) };
+            unsafe { lib.instance.get_physical_device_queue_family_properties(*physical_device) };
         let qfam_inds = {
             let mut g_q = None;
             let mut t_q = None;
@@ -99,7 +97,8 @@ impl Device {
                 if qfam.queue_count > 0
                     && qfam.queue_flags.contains(vk::QueueFlags::GRAPHICS)
                     && unsafe {
-                        surface.loader
+                        surface
+                            .loader
                             .get_physical_device_surface_support(
                                 *physical_device,
                                 index as u32,
@@ -153,7 +152,7 @@ impl Device {
             .enabled_extension_names(&device_extension_name_ptr)
             .enabled_layer_names(&enabled_layer_ptr);
         let device = unsafe {
-            instance
+            lib.instance
                 .create_device(*physical_device, &device_info, None)
                 .map_err(|e| DeviceError::LogicalCreation(e))
         }?;
@@ -172,8 +171,6 @@ impl Device {
 
 impl Drop for Device {
     fn drop(&mut self) {
-        unsafe {self.logical.destroy_device(None)};
+        unsafe { self.logical.destroy_device(None) };
     }
 }
-
-

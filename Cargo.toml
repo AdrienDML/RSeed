@@ -8,9 +8,9 @@ edition = "2018"
 
 [dependencies]
 ash = "*"
-rseed_log = {path = "lib/rseed_log"}
-rseed_vk = {path = "lib/rseed_vk"}
-rseed_app = {path = "lib/rseed_app"}
+rseed_log = {path = "crates/rseed_log"}
+rseed_vk = {path = "crates/rseed_vk"}
+rseed_app = {path = "crates/rseed_app"}
 winit = "0.24.0"
 raw-window-handle = "0.3.3"
 
