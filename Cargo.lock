@@ -258,6 +258,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 
 [[package]]
+name = "example-base-app"
+version = "0.1.0"
+dependencies = [
+ "rseed_app",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -694,19 +701,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rseed"
-version = "0.1.0"
-dependencies = [
- "ash",
- "raw-window-handle",
- "raw-window-metal",
- "rseed_app",
- "rseed_log",
- "rseed_vk",
- "winit",
-]
-
-[[package]]
 name = "rseed_app"
 version = "0.1.0"
 dependencies = [
@@ -727,6 +721,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rseed_res"
+version = "0.1.0"
+
+[[package]]
 name = "rseed_vk"
 version = "0.1.0"
 dependencies = [
@@ -735,7 +733,14 @@ dependencies = [
  "raw-window-metal",
  "rseed_core",
  "rseed_log",
+ "rust-gpu",
 ]
+
+[[package]]
+name = "rust-gpu"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82166b6b0b90a1ddcd268d0b9a0c5a4b708f1924ae03dfeffb01f935787c1364"
 
 [[package]]
 name = "rusttype"
