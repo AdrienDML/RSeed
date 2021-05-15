@@ -19,8 +19,6 @@ jobs:
           override: true
           components: clippy
       - uses: actions/checkout@v2
-      - name: test ls
-        run: ls ./
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
