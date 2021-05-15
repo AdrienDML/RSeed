@@ -1,13 +1,12 @@
 use super::{
-    library::*,
     device::{Device, DeviceError},
+    library::*,
     surface::{Surface, SurfaceError},
     swapchain::{Swapchain, SwapchainError},
     window::HasRawWindowHandle,
 };
 
 use rseed_core::utils::Version;
-
 
 #[derive(Clone, Debug)]
 pub enum ContextError {
@@ -32,25 +31,18 @@ impl VkContext {
         app_version: Version,
         window_handle: &dyn HasRawWindowHandle,
     ) -> Result<Self> {
+        let library = Library::init(app_name, app_version, window_handle)
+            .map_err(|e| ContextError::Library(e))?;
 
-        let library = Library::init(
-            app_name,
-            app_version,
-            window_handle,
-        ).map_err(|e| ContextError::Library(e))?;
-
-        let surface = Surface::init(&library, window_handle)
-            .map_err(|e| ContextError::Surface(e))?;
+        let surface =
+            Surface::init(&library, window_handle).map_err(|e| ContextError::Surface(e))?;
 
         // Device creation
-        let device =
-            Device::init(&library, &surface).map_err(|e| ContextError::Device(e))?;
+        let device = Device::init(&library, &surface).map_err(|e| ContextError::Device(e))?;
         // Swapchain
-        let swapchain = Swapchain::init(&library, &device, &surface)
-            .map_err(|e| ContextError::Swapchain(e))?;
-        
-        
-        
+        let swapchain =
+            Swapchain::init(&library, &device, &surface).map_err(|e| ContextError::Swapchain(e))?;
+
         Ok(Self {
             library,
             surface,
@@ -58,8 +50,6 @@ impl VkContext {
             swapchain,
         })
     }
-
-
 }
 
 impl Drop for VkContext {

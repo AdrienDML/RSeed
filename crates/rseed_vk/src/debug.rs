@@ -20,7 +20,9 @@ pub unsafe extern "system" fn vulkan_debug_utils_callback(
         31, //RED     -> error & fatal
         0,  //RESET
     ];
-    let message = std::ffi::CStr::from_ptr((*p_callback_data).p_message).to_str().expect("Vulkan Debug call back message tranlation failed!");
+    let message = std::ffi::CStr::from_ptr((*p_callback_data).p_message)
+        .to_str()
+        .expect("Vulkan Debug call back message tranlation failed!");
     let ty = format!("{:?}", message_type).to_lowercase();
     println!(
         "\x1B[{}m[{}] {} {:?}:{}> {} \x1B[{}m",

@@ -1,11 +1,7 @@
-use ash::{
-    self,
-    extensions::khr,
-    vk,
-};
+use ash::{self, extensions::khr, vk};
 
-use super::library::*;
 use super::device::*;
+use super::library::*;
 use super::surface::*;
 
 #[derive(Clone, Debug)]
@@ -24,11 +20,7 @@ pub(crate) struct Swapchain {
 }
 
 impl Swapchain {
-    pub fn init(
-        lib : &Library,
-        device : &Device,
-        surface: &Surface,
-    ) -> Result<Self> {
+    pub fn init(lib: &Library, device: &Device, surface: &Surface) -> Result<Self> {
         let surface_capabilities = unsafe {
             surface
                 .loader

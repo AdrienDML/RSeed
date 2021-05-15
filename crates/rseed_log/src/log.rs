@@ -1,7 +1,6 @@
-use std::fmt::{Debug};
-use rseed_core::time;
 use crate::color::*;
-
+use rseed_core::time;
+use std::fmt::Debug;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum LogLevel {
@@ -46,7 +45,7 @@ impl Logger {
         }
     }
 
-    pub fn log<T: Debug>(&self, level : LogLevel, name : &String, content : &T) {
+    pub fn log<T: Debug>(&self, level: LogLevel, name: &String, content: &T) {
         println!(
             "\x1B[{}m[{}] {}:{}> {:?} \x1B[{}m",
             self.colorpicker.get_color(level.into()),
@@ -59,34 +58,16 @@ impl Logger {
     }
 
     pub fn trace<T: Debug>(&self, content: &T) {
-        self.log(
-            LogLevel::TRACE,
-            &self.name,
-            content,
-        );
+        self.log(LogLevel::TRACE, &self.name, content);
     }
 
     pub fn info<T: Debug>(&self, content: &T) {
-        self.log(
-            LogLevel::INFO,
-            &self.name,
-            content,
-        );
+        self.log(LogLevel::INFO, &self.name, content);
     }
     pub fn warn<T: Debug>(&self, content: &T) {
-        self.log(
-            LogLevel::WARN,
-            &self.name,
-            content,
-        );
+        self.log(LogLevel::WARN, &self.name, content);
     }
     pub fn error<T: Debug>(&self, content: &T) {
-        self.log(
-            LogLevel::ERROR,
-            &self.name,
-            content,
-        );
+        self.log(LogLevel::ERROR, &self.name, content);
     }
-
 }
-

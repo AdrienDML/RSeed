@@ -1,5 +1,11 @@
-use rseed_app::App;
+use rseed_app::{App, AppError};
 fn main() {
-    let application = App::init(600, 600).unwrap();
+    let application = match App::init(600, 600) {
+        Ok(app) => app,
+        Err(e) => {
+            println!("{:?}", e);
+            panic!();
+        }
+    };
     application.run();
 }

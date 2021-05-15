@@ -1,7 +1,4 @@
-use ash::{
-    self,
-    vk, Entry, Instance,
-};
+use ash::{self, vk, Entry, Instance};
 
 pub(crate) use ash::version::{EntryV1_0, InstanceV1_0};
 
@@ -20,12 +17,12 @@ pub enum LibraryError {
     Extention(window::WindowError),
 }
 
-pub(crate) type  Result<T> = std::result::Result<T, LibraryError>;
+pub(crate) type Result<T> = std::result::Result<T, LibraryError>;
 
 pub(crate) struct Library {
-    pub(crate) entry : Entry,
-    pub(crate) instance : Instance,
-    pub(crate) enabled_layers : Vec<std::ffi::CString>,
+    pub(crate) entry: Entry,
+    pub(crate) instance: Instance,
+    pub(crate) enabled_layers: Vec<std::ffi::CString>,
 }
 
 impl Library {
@@ -33,18 +30,15 @@ impl Library {
         app_name: String,
         app_version: Version,
         window_handle: &dyn HasRawWindowHandle,
-    ) -> Result<Self> 
-    {
-        let entry = unsafe {
-            Entry::new().map_err(|_| LibraryError::LibLoadFail)?
-        };
+    ) -> Result<Self> {
+        let entry = unsafe { Entry::new().map_err(|_| LibraryError::LibLoadFail)? };
         let layer_names = Self::query_layers()?;
         //instance creation
         let instance = Self::create_instance(&entry, app_name, app_version, window_handle)?;
         Ok(Self {
             entry,
             instance,
-            enabled_layers : layer_names,
+            enabled_layers: layer_names,
         })
     }
 
@@ -80,7 +74,6 @@ impl Library {
             .enabled_extension_names(&extension_pointers)
             .enabled_layer_names(&layer_pointer);
 
-        
         unsafe {
             entry
                 .create_instance(&create_info, None)

@@ -1,8 +1,4 @@
-use ash::{
-    self,
-    extensions::khr,
-    vk,
-};
+use ash::{self, extensions::khr, vk};
 
 pub use ash::version::DeviceV1_0;
 
@@ -27,10 +23,7 @@ pub(crate) struct Device {
 }
 
 impl Device {
-    pub(crate) fn init(
-        lib: &Library,
-        surface: &Surface,
-    ) -> Result<Self> {
+    pub(crate) fn init(lib: &Library, surface: &Surface) -> Result<Self> {
         let (physical, _device_prop) = Self::chose_device(lib)?;
         let (logical, graphic_queue, transfert_queue, compute_queue, queue_inds) =
             Self::create_logical_device(lib, &physical, surface)?;
@@ -45,9 +38,7 @@ impl Device {
         })
     }
 
-    fn chose_device(
-        lib: &Library,
-    ) -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties)> {
+    fn chose_device(lib: &Library) -> Result<(vk::PhysicalDevice, vk::PhysicalDeviceProperties)> {
         let phys_devs = unsafe {
             lib.instance
                 .enumerate_physical_devices()
@@ -86,9 +77,12 @@ impl Device {
         vk::Queue,
         (u32, u32, u32),
     )> {
-        let enabled_layer_ptr: Vec<*const i8> = lib.enabled_layers.iter().map(|l| l.as_ptr()).collect();
-        let queue_fam_props =
-            unsafe { lib.instance.get_physical_device_queue_family_properties(*physical_device) };
+        let enabled_layer_ptr: Vec<*const i8> =
+            lib.enabled_layers.iter().map(|l| l.as_ptr()).collect();
+        let queue_fam_props = unsafe {
+            lib.instance
+                .get_physical_device_queue_family_properties(*physical_device)
+        };
         let qfam_inds = {
             let mut g_q = None;
             let mut t_q = None;

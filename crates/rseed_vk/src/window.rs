@@ -103,7 +103,7 @@ where
                 .surface(handle.surface);
             let surface_fn = ash::extensions::khr::WaylandSurface::new(entry, instance);
             surface_fn
-                .create_wayland_surface(&surface_desc, allocation_callbacks)
+                .create_wayland_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
@@ -120,7 +120,7 @@ where
                 .window(handle.window);
             let surface_fn = ash::extensions::khr::XlibSurface::new(entry, instance);
             surface_fn
-                .create_xlib_surface(&surface_desc, allocation_callbacks)
+                .create_xlib_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
@@ -137,7 +137,7 @@ where
                 .window(handle.window);
             let surface_fn = ash::extensions::khr::XcbSurface::new(entry, instance);
             surface_fn
-                .create_xcb_surface(&surface_desc, allocation_callbacks)
+                .create_xcb_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
@@ -147,7 +147,7 @@ where
                 vk::AndroidSurfaceCreateInfoKHR::builder().window(handle.a_native_window as _);
             let surface_fn = ash::extensions::khr::AndroidSurface::new(entry, instance);
             surface_fn
-                .create_android_surface(&surface_desc, allocation_callbacks)
+                .create_android_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
@@ -163,7 +163,7 @@ where
             let surface_desc = vk::MetalSurfaceCreateInfoEXT::builder().layer(&*layer);
             let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
             surface_fn
-                .create_metal_surface(&surface_desc, allocation_callbacks)
+                .create_metal_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 
@@ -179,7 +179,7 @@ where
             let surface_desc = vk::MetalSurfaceCreateInfoEXT::builder().layer(&*layer);
             let surface_fn = ash::extensions::ext::MetalSurface::new(entry, instance);
             surface_fn
-                .create_metal_surface(&surface_desc, allocation_callbacks)
+                .create_metal_surface(&surface_desc, None)
                 .map_err(|e| WindowError::SurfaceCreationFailed(e))
         }
 

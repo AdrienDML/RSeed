@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use rseed_vk::context::*;
 use rseed_log::Logger;
+use rseed_vk::context::*;
 
 use winit::{
     self,
