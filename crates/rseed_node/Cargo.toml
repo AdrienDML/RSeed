@@ -1,0 +1,11 @@
+[package]
+name = "rseed_node"
+version = "0.1.0"
+authors = ["AdrienDML <adriendml99@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rseed_math = {path = "../rseed_math"}
+node_macros = {path = "node_macros"}

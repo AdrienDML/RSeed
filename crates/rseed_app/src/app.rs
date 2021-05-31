@@ -9,7 +9,7 @@ use glutin::{
     self,
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::{Window, WindowBuilder},
+    window::Window,
 };
 
 pub type Result<T> = std::result::Result<T, AppError>;

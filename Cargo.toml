@@ -4,5 +4,9 @@ members = [
     #"vendor/*",
     "examples/*",
 ]
+exclude = [
+    "crates/rseed_shaderlib",
+    "crates/rseed_node",
+]
 
 
