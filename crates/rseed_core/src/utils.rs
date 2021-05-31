@@ -19,3 +19,9 @@ impl Into<u32> for Version {
         (self.major << 22) | (self.minor << 12) | self.patch
     }
 }
+
+impl std::fmt::Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
