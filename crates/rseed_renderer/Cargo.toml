@@ -1,0 +1,24 @@
+[package]
+name = "rseed_renderer"
+version = "0.1.0"
+authors = ["AdrienDML <adriendml99@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glutin = "0.26.0"
+rseed_core = {path = "../rseed_core"}
+rseed_vk = {path = "../rseed_vk", optional = true}
+rseed_gl = {path = "../rseed_gl", optional = true}
+rseed_shaderlib = {path = "../rseed_shaderlib"}
+
+raw-window-handle = {version = "0.3.3", optional = true}
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+raw-window-metal = {version = "0.1", optional = true}
+
+[features]
+default = ["gl"]
+vk = ["rseed_vk", "raw-window-handle"]
+gl = ["rseed_gl"]
+

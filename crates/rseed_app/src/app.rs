@@ -1,9 +1,11 @@
 use std::str::FromStr;
 
 use rseed_log::Logger;
-use rseed_vk::context::*;
+use rseed_core::utils::Version;
+use rseed_renderer::Renderer;
 
-use winit::{
+
+use glutin::{
     self,
     event::{Event, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
@@ -14,37 +16,34 @@ pub type Result<T> = std::result::Result<T, AppError>;
 
 #[derive(Debug)]
 pub enum AppError {
-    Context(ContextError),
 }
 
 pub struct App {
     pub logger: Logger,
-    pub context: VkContext,
     pub event_loop: EventLoop<()>,
+    pub renderer: Renderer,
     pub window: Window,
-    //pub surface: std::sync::Arc<vk::swapchain::Surface<Window>>,
 }
 
 impl App {
-    pub fn init(width: u32, height: u32) -> Result<Self> {
+    pub fn init(width: u32, height: u32, app_name : String, app_version : Version) -> Result<Self> {
         let logger = Logger::new(String::from_str("RS-eed").unwrap());
-        let event_loop = EventLoop::new();
-        let window = WindowBuilder::new()
-            .with_resizable(false)
-            .with_inner_size(winit::dpi::Size::Physical(winit::dpi::PhysicalSize::new(
-                width, height,
-            )))
-            .build(&event_loop)
-            .unwrap();
+        
+        
 
-        // Create the Vulkan context
-        let context =
-            unsafe { VkContext::init(String::from("Test"), (0, 0, 1).into(), &window).unwrap() };
+        // Create Graphic pipeline
+        let (renderer, window, event_loop) = Renderer::init(
+            app_name,
+            app_version,
+            width,
+            height,
+        ).unwrap();
+
 
         Ok(Self {
             logger,
-            context,
             event_loop,
+            renderer,
             window,
         })
     }

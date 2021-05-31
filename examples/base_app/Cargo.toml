@@ -8,3 +8,4 @@ publish = false
 
 [dependencies]
 rseed_app = {path = "../../crates/rseed_app"}
+rseed_core = {path = "../../crates/rseed_core"}

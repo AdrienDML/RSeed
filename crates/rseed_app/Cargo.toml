@@ -8,6 +8,8 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rseed_vk = {path = "../rseed_vk"}
+glutin = "0.26.0"
+rseed_renderer = {path = "../rseed_renderer"}
 rseed_log = {path = "../rseed_log"}
-winit = "0.25.0"
+rseed_core = {path = "../rseed_core"}
+
