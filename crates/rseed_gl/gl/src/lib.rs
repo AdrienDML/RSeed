@@ -23,7 +23,6 @@ impl Gl {
     }
 }
 
-
 impl Deref for Gl {
     type Target = bindings::Gl;
 

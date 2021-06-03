@@ -19,18 +19,22 @@ pub struct GlContext {
 
 impl GlContext
 {
-    pub fn init<>(
+    pub fn init(
         raw_context : glutin::RawContext<NotCurrent>
     ) -> Result<Self> {
 
-        let raw_ctx = match unsafe {raw_context.make_current()} {
-            Ok(ctx) => ctx,
-            Err((_ctx,err)) => return Err(ContextError::ContextCurentError(err)),
-        };
+        let raw_ctx = unsafe {raw_context.make_current()}
+        .or_else(
+            |(_ctx, err)| Err(ContextError::ContextCurentError(err)))?;
+        println!("Acitve ctx ? {}", raw_ctx.is_current());
         let gl = gl::Gl::load_with(|s| raw_ctx.get_proc_address(s));
         Ok(Self {
             gl,
             raw_ctx,
         })
     }
+
+    pub fn swap_buffers(&self) {
+        self.raw_ctx.swap_buffers().unwrap()
+    } 
 }

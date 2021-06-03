@@ -7,6 +7,7 @@ members = [
 exclude = [
     "crates/rseed_shaderlib",
     "crates/rseed_node",
+    "test"
 ]
 
 

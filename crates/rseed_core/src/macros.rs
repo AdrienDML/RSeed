@@ -1,5 +1,5 @@
 
-macro_rules! lint_params {
+macro_rules! all_lints {
     () => {
         #![warn(
             clippy::all,

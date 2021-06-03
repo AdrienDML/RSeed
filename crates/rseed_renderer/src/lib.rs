@@ -44,13 +44,14 @@ impl Renderer {
             .with_inner_size(glutin::dpi::Size::Physical(glutin::dpi::PhysicalSize::new(
                 w_width, w_height,
             )))
-            .with_title(format!("{}: {}", app_name, app_version));
+            .with_title(format!("{}: {}", app_name, app_version))
+            .with_visible(true);
 
 
 
         #[cfg(feature="vk")]
         let (window, context) = (
-            window_builder.build().unwrap(),
+            window_builder.build(&event_loop).unwrap(),
             rseed_vk::context::VkContext::init(app_name, app_version, window)
         );
 
@@ -74,6 +75,10 @@ impl Renderer {
             event_loop,
         ))
 
+    }
+
+    pub fn draw(&self) {
+        self.context.swap_buffers()
     }
 
 }

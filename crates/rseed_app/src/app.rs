@@ -5,12 +5,7 @@ use rseed_core::utils::Version;
 use rseed_renderer::Renderer;
 
 
-use glutin::{
-    self,
-    event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    window::Window,
-};
+use glutin::{self, event::{Event, WindowEvent}, event_loop::{ControlFlow, EventLoop}, platform::unix::WindowExtUnix, window::Window};
 
 pub type Result<T> = std::result::Result<T, AppError>;
 
@@ -29,8 +24,6 @@ impl App {
     pub fn init(width: u32, height: u32, app_name : String, app_version : Version) -> Result<Self> {
         let logger = Logger::new(String::from_str("RS-eed").unwrap());
         
-        
-
         // Create Graphic pipeline
         let (renderer, window, event_loop) = Renderer::init(
             app_name,
@@ -49,11 +42,14 @@ impl App {
     }
 
     pub fn run(self) {
-        self.event_loop.run(|event, _, cf| match event {
+        self.logger.info(&String::from("The app is running!"));
+        let ren = self.renderer;
+        self.event_loop.run( move |event, _, cf| match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
             } => *cf = ControlFlow::Exit,
+            Event::RedrawRequested(_) => ren.draw(),
             _ => (),
         })
     }

@@ -12,7 +12,7 @@ fn main() {
     let registry = Registry::new(Api::Gl, (4, 5), Profile::Core, Fallbacks::All, [
         "GL_NV_command_list",
     ]);
-
+    
     if env::var("CARGO_FEATURE_DEBUG").is_ok() {
         registry.write_bindings(
             DebugStructGenerator,
