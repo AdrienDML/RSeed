@@ -49,11 +49,13 @@ impl App {
     }
 
     pub fn run(self) {
+        let rendrer = self.renderer;
         self.event_loop.run(|event, _, cf| match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
             } => *cf = ControlFlow::Exit,
+            Event::RedrawRequested(_) => rendrer.draw(),
             _ => (),
         })
     }

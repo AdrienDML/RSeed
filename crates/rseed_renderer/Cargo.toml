@@ -18,7 +18,6 @@ raw-window-handle = {version = "0.3.3", optional = true}
 raw-window-metal = {version = "0.1", optional = true}
 
 [features]
-default = ["gl"]
 vk = ["rseed_vk", "raw-window-handle"]
 gl = ["rseed_gl"]
 

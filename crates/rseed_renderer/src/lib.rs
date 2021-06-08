@@ -1,3 +1,6 @@
+#[cfg(all(feature = "vk", feature = "gl"))]
+compile_error!("The vk and gl features cannot be enabled at the same time");
+
 #[cfg(feature="vk")]
 pub mod rexports {
     use rseed_vk;
@@ -30,6 +33,8 @@ pub struct Renderer {
     context : rseed_gl::context::GlContext,
 }
 
+
+
 impl Renderer {
     
     pub fn init(
@@ -49,10 +54,14 @@ impl Renderer {
 
 
         #[cfg(feature="vk")]
-        let (window, context) = (
-            window_builder.build().unwrap(),
-            rseed_vk::context::VkContext::init(app_name, app_version, window)
-        );
+        let (window, context) = {
+            let win = window_builder.build(&event_loop).unwrap();
+            let ctx = unsafe {rseed_vk::context::VkContext::init(app_name, app_version, &win).unwrap()};
+            (
+                win,
+                ctx,
+            )
+        };
 
         #[cfg(feature="gl")]
         let (context, window)  = {
@@ -76,4 +85,8 @@ impl Renderer {
 
     }
 
+
+    pub fn draw(&self) {
+        self.context.swap_buffers();
+    }
 }
