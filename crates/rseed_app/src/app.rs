@@ -43,8 +43,8 @@ impl App {
 
     pub fn run(self) {
         self.logger.info(&String::from("The app is running!"));
-        let ren = self.renderer;
-        self.event_loop.run( move |event, _, cf| match event {
+        let rendrer = self.renderer;
+        self.event_loop.run(|event, _, cf| match event {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..

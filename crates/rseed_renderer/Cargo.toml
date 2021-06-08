@@ -16,7 +16,6 @@ rseed_shaderlib = {path = "../rseed_shaderlib"}
 raw-window-handle = {version = "0.3.3", optional = true}
 
 [features]
-default = ["gl"]
 vk = ["rseed_vk", "raw-window-handle"]
 gl = ["rseed_gl"]
 
