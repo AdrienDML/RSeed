@@ -1,5 +1,5 @@
 **/target
 .vscode
 **/Cargo.lock
-Cargo.lock
 vendor
+Cargo.lock
