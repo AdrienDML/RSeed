@@ -1,5 +1,5 @@
 
-pub trait ContextT : Drop {
+pub trait ContextT {
     fn swap_buffers(&self);
 
 }

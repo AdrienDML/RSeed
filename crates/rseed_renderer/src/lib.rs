@@ -1,6 +1,5 @@
 use std::ops::Deref;
 
-use gl::GlRenderer;
 use rseed_core::utils::Version;
 use rseed_vk as vk;
 use rseed_gl as gl;
@@ -14,7 +13,6 @@ use glutin::{
     },
     event_loop::EventLoop,
 };
-use vk::VkRenderer;
 
 
 #[derive(Debug)]

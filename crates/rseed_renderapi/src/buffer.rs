@@ -1,17 +1,17 @@
 use rseed_math::Vec3D;
 
-pub trait VertexArrayT : Drop {
+pub trait VertexArrayT {
 
 }
 
 
-pub trait VertexBufferT : Drop {
+pub trait VertexBufferT {
 
     fn set_data(&self, data : &[Vec3D]);
 
     fn bind();
 }
 
-pub trait IndexBufferT : Drop {
+pub trait IndexBufferT {
     fn set_data(&self, data : &[usize]);
 }

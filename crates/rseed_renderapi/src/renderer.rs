@@ -1,6 +1,6 @@
 /// All the renderer platform supported by the engine at the moment.
 
-pub trait RendererT : Drop {
+pub trait RendererT {
     fn swap_buffers(&self);
 
 }

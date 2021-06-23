@@ -1,4 +1,4 @@
 
-pub trait TextureT : Drop {
+pub trait TextureT {
     
 }
