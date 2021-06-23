@@ -1,13 +1,11 @@
-#[cfg(all(feature = "vk", feature = "gl"))]
-compile_error!("The vk and gl features cannot be enabled at the same time");
+use std::ops::Deref;
 
-#[cfg(feature="vk")]
-pub mod rexports {
-    use rseed_vk;
-    pub use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-}
-#[cfg(feature="gl")]
-use rseed_gl;
+use gl::GlRenderer;
+use rseed_core::utils::Version;
+use rseed_vk as vk;
+use rseed_gl as gl;
+use rseed_renderapi::{renderer::RendererT, Backend};
+pub use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
 
 use glutin::{
     window::{
@@ -16,78 +14,76 @@ use glutin::{
     },
     event_loop::EventLoop,
 };
+use vk::VkRenderer;
 
-use rseed_core::utils::Version;
 
 #[derive(Debug)]
 pub enum RendererError {
 
 }
 
+
 pub type Result<T> = std::result::Result<T,RendererError>;
 
 pub struct Renderer {
-    #[cfg(feature="vk")]
-    context : rseed_vk::context::VkContext,
-    #[cfg(feature="gl")]
-    context : rseed_gl::context::GlContext,
+    inner : Box<dyn RendererT>,
+}
+
+impl Deref for Renderer
+{
+    type Target = Box<dyn RendererT>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
 }
 
 
 
-impl Renderer {
-    
+
+impl Renderer
+{
+
+    pub fn new(inner : Box<dyn RendererT>) -> Self {
+        Self {
+            inner : inner,
+        }
+    }
+
     pub fn init(
+        window_builder : WindowBuilder,
+        event_loop : &EventLoop<()>,
         app_name : String,
         app_version : Version,
-        w_width : u32,
-        w_height : u32,
-    ) -> Result<(Self, Window, EventLoop<()>)> {
-        let event_loop = EventLoop::new();
-        let window_builder = WindowBuilder::new()
-            .with_resizable(false)
-            .with_inner_size(glutin::dpi::Size::Physical(glutin::dpi::PhysicalSize::new(
-                w_width, w_height,
-            )))
-            .with_title(format!("{}: {}", app_name, app_version))
-            .with_visible(true);
+        backend : Backend,
+    ) -> Result<(Self, Window)> {
+        match backend {
+            Backend::VK => { 
+                let window = window_builder.build(event_loop).unwrap();
+                let ctx = unsafe {
+                    vk::context::VkContext::init(app_name, app_version, &window)
+                        .unwrap()
+                };
+                let renderer = Self::new(Box::new(vk::VkRenderer::new(ctx)));
+                return Ok((renderer, window));
+            }
 
-
-
-        #[cfg(feature="vk")]
-        let (window, context) = {
-            let win = window_builder.build(&event_loop).unwrap();
-            let ctx = unsafe {rseed_vk::context::VkContext::init(app_name, app_version, &win).unwrap()};
-            (
-                win,
-                ctx,
-            )
-        };
-
-        #[cfg(feature="gl")]
-        let (context, window)  = {
-            let (raw_context, window) = unsafe {
-                glutin::ContextBuilder::new()
-                    .build_windowed(window_builder, &event_loop)
-                    .unwrap()
-                    .split()
-            };
-            (rseed_gl::context::GlContext::init(raw_context).unwrap(), window)
-        };
-
-
-        Ok ((
-            Self {
-                context,
-            },
-            window,
-            event_loop,
-        ))
-
+            Backend::GL => {
+                let (raw_context, window) = unsafe {
+                    glutin::ContextBuilder::new()
+                        .build_windowed(window_builder, &event_loop)
+                        .unwrap()
+                        .split()
+                };
+                let ctx = rseed_gl::context::GlContext::init(raw_context).unwrap();
+                let renderer = Self::new(Box::new(gl::GlRenderer::new(ctx)));
+                return Ok((renderer, window));
+            }
+        }
     }
 
 
     pub fn draw(&self) {
-        self.context.swap_buffers();
+        self.inner.swap_buffers();
     }
 }

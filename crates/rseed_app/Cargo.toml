@@ -12,7 +12,4 @@ glutin = "0.26.0"
 rseed_renderer = {path = "../rseed_renderer"}
 rseed_log = {path = "../rseed_log"}
 rseed_core = {path = "../rseed_core"}
-
-[features]
-vk = ["rseed_renderer/vk"]
-gl = ["rseed_renderer/gl"]
+rseed_renderapi = {path = "../rseed_renderapi"}

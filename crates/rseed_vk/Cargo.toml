@@ -10,6 +10,7 @@ edition = "2018"
 ash = "0.32.1"
 rseed_log = {path = "../rseed_log"}
 rseed_core = {path = "../rseed_core"}
+rseed_renderapi = {path = "../rseed_renderapi"}
 
 raw-window-handle = "0.3.3"
 [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]

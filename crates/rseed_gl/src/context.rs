@@ -38,3 +38,9 @@ impl GlContext
         self.raw_ctx.swap_buffers().unwrap()
     } 
 }
+
+impl Drop for GlContext {
+    fn drop(&mut self) {
+        
+    }
+}
