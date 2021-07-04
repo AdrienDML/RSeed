@@ -4,15 +4,19 @@ use ash::{
     vk,
 };
 pub use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-
+use rseed_core::error::*;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use ash::extensions::ext; // portability extensions
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Error)]
 pub enum WindowError {
+    #[error(display = "The extension is not present: {:?}.", _0)]
     ExtensionNotPresent(vk::Result),
-    SurfaceCreationFailed(vk::Result),
+    #[error(display = "The surface creation failed : {:?}.", _0)]
+    SurfaceCreationFailed(vk::Result), 
 }
+
+
 pub type Result<T> = std::result::Result<T, WindowError>;
 
 /// Returns all the vulkan extension to load for each platform

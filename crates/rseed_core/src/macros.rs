@@ -1,4 +1,4 @@
-
+#[macro_export]
 macro_rules! all_lints {
     () => {
         #![warn(

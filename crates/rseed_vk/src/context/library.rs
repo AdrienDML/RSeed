@@ -8,13 +8,17 @@ use super::window::{self, HasRawWindowHandle};
 use rseed_core::{
     consts::{ENGINE_NAME, ENGINE_VERSION},
     utils::Version,
+    error::*,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Error)]
 pub enum LibraryError {
-    LibLoadFail,
-    NoInstance(ash::InstanceError),
-    Extention(window::WindowError),
+    #[error(display = "Error loading vulkan {:?}", _0)]
+    LibLoadFail(#[error(source)] ash::LoadingError),
+    #[error(display = "Error creating vulkan instance {:?}", _0)]
+    NoInstance(#[error(source)] ash::InstanceError),
+    #[error(display = "Error loading vulkan extension: {:?}", _0)]
+    Extention(#[error(source)] window::WindowError),
 }
 
 pub(crate) type Result<T> = std::result::Result<T, LibraryError>;
@@ -31,7 +35,7 @@ impl Library {
         app_version: Version,
         window_handle: &dyn HasRawWindowHandle,
     ) -> Result<Self> {
-        let entry = unsafe { Entry::new().map_err(|_| LibraryError::LibLoadFail)? };
+        let entry = unsafe { Entry::new().map_err(|e| LibraryError::LibLoadFail(e))? };
         let layer_names = Self::query_layers()?;
         //instance creation
         let instance = Self::create_instance(&entry, app_name, app_version, window_handle)?;

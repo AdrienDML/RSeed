@@ -1,4 +1,6 @@
 use ash::{self, vk};
+all_lints!()
+
 
 #[derive(Clone, Debug)]
 pub enum PipelineError {}
@@ -10,4 +12,10 @@ pub(crate) struct Pipeline {
     pub layout: vk::PipelineLayout,
 }
 
-impl Pipeline {}
+impl Pipeline {
+
+    pub fn init() -> Self {
+        
+    }
+
+}

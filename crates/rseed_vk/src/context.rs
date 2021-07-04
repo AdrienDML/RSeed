@@ -5,6 +5,7 @@ pub mod pipeline;
 pub mod surface;
 pub mod swapchain;
 pub mod window;
+
 use self::{
     device::{Device, DeviceError},
     library::*,
@@ -13,13 +14,20 @@ use self::{
     window::HasRawWindowHandle,
 };
 
-use rseed_core::utils::Version;
+use rseed_core::{
+    utils::Version,
+    error::*,
+};
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Error)]
 pub enum ContextError {
+    #[error(display = "There was an error while initiating vulkan : {:?}.", _0)]
     Library(LibraryError),
+    #[error(display = "There was an error during surface creation : {:?}.", _0)]
     Surface(SurfaceError),
+    #[error(display = "There was an error during device creation : {:?}.", _0)]
     Device(DeviceError),
+    #[error(display = "There was an error during swapchain creation : {:?}.", _0)]
     Swapchain(SwapchainError),
 }
 

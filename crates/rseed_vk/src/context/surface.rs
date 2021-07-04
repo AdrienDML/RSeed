@@ -3,9 +3,15 @@ use ash::{self, extensions::khr, vk};
 use super::library::*;
 use super::window::{self, HasRawWindowHandle};
 
-#[derive(Clone, Debug)]
+use rseed_core::{
+    error::*,
+};
+
+#[derive(Debug, Error)]
 pub enum SurfaceError {
+    #[error(display = "There was an error during surface creation : {:?}.", _0)]
     CreationFailed(vk::Result),
+    #[error(display = "Error regarding Extensions : {:?}.", _0)]
     Extension(window::WindowError),
 }
 
