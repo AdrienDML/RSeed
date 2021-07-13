@@ -5,4 +5,5 @@ pub const ENGINE_VERSION: Version = Version {
     minor: 0,
     patch: 1,
 };
+
 pub const ENGINE_NAME: &'static str = "RSeeD";

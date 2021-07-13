@@ -1,5 +1,7 @@
+use rseed_core::prelude::*;
+
 use ash::{self, vk};
-all_lints!()
+
 
 
 #[derive(Clone, Debug)]
@@ -14,8 +16,8 @@ pub(crate) struct Pipeline {
 
 impl Pipeline {
 
-    pub fn init() -> Self {
-        
+    pub fn init() -> () {
+        todo!()
     }
 
 }

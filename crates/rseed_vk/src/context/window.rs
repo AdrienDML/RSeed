@@ -1,10 +1,12 @@
+use rseed_core::prelude::*;
+
 use ash::{
     extensions::khr,
     version::{EntryV1_0, InstanceV1_0},
     vk,
 };
 pub use raw_window_handle::{HasRawWindowHandle, RawWindowHandle};
-use rseed_core::error::*;
+
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 use ash::extensions::ext; // portability extensions
 

@@ -1,3 +1,5 @@
+use rseed_core::prelude::*;
+
 use ash::{self, vk, Entry, Instance};
 
 pub(crate) use ash::version::{EntryV1_0, InstanceV1_0};
@@ -8,7 +10,6 @@ use super::window::{self, HasRawWindowHandle};
 use rseed_core::{
     consts::{ENGINE_NAME, ENGINE_VERSION},
     utils::Version,
-    error::*,
 };
 
 #[derive(Debug, Error)]

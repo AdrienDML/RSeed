@@ -1,4 +1,10 @@
 pub mod context;
+pub mod buffer;
+//pub mod camera;
+//pub mod shader;
+//pub mod texture;
+pub mod varray;
+
 
 use rseed_renderapi::renderer::RendererT;
 

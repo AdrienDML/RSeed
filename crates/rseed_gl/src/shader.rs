@@ -2,14 +2,10 @@
 use gl::types::*;
 use std::{collections::HashMap, ffi::CString};
 // Crate imports
-use rseed_res::{self, RessourceLoader};
+//use rseed_res::{self, RessourceLoader};
 
-#[derive(Debug)]
+#[derive(Debug,Error)]
 pub enum Error {
-    ResourceLoad {
-        name: String,
-        inner: ressources::Error,
-    },
     CanNotDetermineShaderTypeForResource {
         name: String,
     },
@@ -32,14 +28,7 @@ const POSSIBLE_EXT: [(&str, gl::types::GLenum); 6] = [
     (".comp", gl::COMPUTE_SHADER),
 ];
 
-fn create_empty_cstring_with_len(len: usize) -> CString {
-    // allocate buffer of correct size
-    let mut buffer: Vec<u8> = Vec::with_capacity(len + 1);
-    // fill it with len spaces
-    buffer.extend([b' '].iter().cycle().take(len));
-    // convert buffer to CString
-    unsafe { CString::from_vec_unchecked(buffer) }
-}
+
 
 pub struct ShaderProgram {
     _id: GLuint,
@@ -49,26 +38,26 @@ pub struct ShaderProgram {
 }
 
 impl ShaderProgram {
-    pub fn from_res(gl: &gl::Gl, res: &RessourceLoader, name: &str) -> Result<Self, Error> {
-        let ressources_names : Vec<(String,GLenum)> = POSSIBLE_EXT
-            .iter()
-            // get all coresponding names
-            .map(|(file_ext, stype)| (format!("{}{}", name, file_ext),*stype) )
-            // filter out the ones that don't exists
-            .partition(|(name,stype)| res.name_to_path(&(**name).to_owned()).exists())
-            .0;
+    // pub fn from_res(gl: &gl::Gl, res: &RessourceLoader, name: &str) -> Result<Self, Error> {
+    //     let ressources_names : Vec<(String,GLenum)> = POSSIBLE_EXT
+    //         .iter()
+    //         // get all coresponding names
+    //         .map(|(file_ext, stype)| (format!("{}{}", name, file_ext),*stype) )
+    //         // filter out the ones that don't exists
+    //         .partition(|(name,stype)| res.name_to_path(&(**name).to_owned()).exists())
+    //         .0;
 
-        // create the actual shaders from ressources
-        let shaders = ressources_names
-            .iter()
-            .map(|(ressource_name,stype)| Shader::from_res(gl, res, ressource_name, *stype))
-            .collect::<Result<Vec<Shader>, Error>>()?;
-        // link the shaders into a Progra
-        ShaderProgram::from_shaders(gl, shaders).map_err(|message| Error::LinkError {
-            name: name.to_owned(),
-            message,
-        })
-    }
+    //     // create the actual shaders from ressources
+    //     let shaders = ressources_names
+    //         .iter()
+    //         .map(|(ressource_name,stype)| Shader::from_res(gl, res, ressource_name, *stype))
+    //         .collect::<Result<Vec<Shader>, Error>>()?;
+    //     // link the shaders into a Progra
+    //     ShaderProgram::from_shaders(gl, shaders).map_err(|message| Error::LinkError {
+    //         name: name.to_owned(),
+    //         message,
+    //     })
+    // }
 
     pub fn from_shaders(gl: &gl::Gl, shaders: Vec<Shader>) -> Result<Self, String> {
         let id = unsafe { gl.CreateProgram() };
@@ -130,6 +119,7 @@ impl ShaderProgram {
             self.gl.UseProgram(self._id);
         }
     }
+    
     pub fn unbind(&self) {
         unsafe {
             self.gl.UseProgram(0 as GLuint);
@@ -155,17 +145,17 @@ pub struct Shader {
 
 impl Shader {
 
-    pub fn from_res(gl: &gl::Gl, res: &RessourceLoader, name: &str, stype : GLenum) -> Result<Shader, Error> {
-        let source = res.load_cstring(name).map_err(|e| Error::ResourceLoad {
-            name: name.to_owned(),
-            inner: e,
-        })?;
+    // pub fn from_res(gl: &gl::Gl, res: &RessourceLoader, name: &str, stype : GLenum) -> Result<Shader, Error> {
+    //     let source = res.load_cstring(name).map_err(|e| Error::ResourceLoad {
+    //         name: name.to_owned(),
+    //         inner: e,
+    //     })?;
 
-        Shader::from_source(gl, source, stype).map_err(|e| Error::CompileError {
-            name: name.to_owned(),
-            message: e,
-        })
-    }
+    //     Shader::from_source(gl, source, stype).map_err(|e| Error::CompileError {
+    //         name: name.to_owned(),
+    //         message: e,
+    //     })
+    // }
 
     pub fn from_source(gl: &gl::Gl, source: CString, shader_type: GLenum) -> Result<Self, String> {
         let id = unsafe { gl.CreateShader(shader_type) };

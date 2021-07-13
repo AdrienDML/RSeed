@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 gl = { path = "gl" }
-glutin = "*"
-rseed_res = {path = "../rseed_res"}
+glutin = "0.27"
+rseed_asset = {path = "../rseed_asset"}
 rseed_log = {path = "../rseed_log"}
 rseed_core = {path = "../rseed_core"}
 rseed_renderapi = {path = "../rseed_renderapi"}

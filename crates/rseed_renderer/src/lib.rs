@@ -17,7 +17,7 @@ use glutin::{
 
 #[derive(Debug)]
 pub enum RendererError {
-
+     NoBackendDefined,
 }
 
 
@@ -77,6 +77,7 @@ impl Renderer
                 let renderer = Self::new(Box::new(gl::GlRenderer::new(ctx)));
                 return Ok((renderer, window));
             }
+            Backend::UNDEFINED => return Err(RendererError::NoBackendDefined)
         }
     }
 

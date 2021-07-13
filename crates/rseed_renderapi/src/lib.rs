@@ -4,11 +4,12 @@ pub mod renderer;
 pub mod buffer;
 pub mod texture;
 
+use rseed_core::prelude::*;
 
-
-
-
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(crate = "serde")]
 pub enum Backend {
     GL,
     VK,
+    UNDEFINED,
 }

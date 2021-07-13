@@ -12,7 +12,7 @@ pub unsafe extern "system" fn vulkan_debug_utils_callback(
     p_callback_data: *const vk::DebugUtilsMessengerCallbackDataEXT,
     _p_user_data: *mut std::ffi::c_void,
 ) -> vk::Bool32 {
-    use rseed_core::time;
+    use rseed_core::utils::get_time;
     let colorcodes = [
         37, //WHITE   -> trace
         32, //GREEN   -> info
@@ -27,7 +27,7 @@ pub unsafe extern "system" fn vulkan_debug_utils_callback(
     println!(
         "\x1B[{}m[{}] {} {:?}:{}> {} \x1B[{}m",
         colorcodes[into_log_level(message_severity)],
-        time::get_time().unwrap(),
+        get_time().unwrap(),
         "Vulkan",
         message_severity,
         ty,

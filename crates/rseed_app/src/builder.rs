@@ -1,55 +1,29 @@
-use rseed_core::utils::Version;
+use std::path::PathBuf;
+
+use rseed_core::{
+    utils::Version,
+    prelude::*,
+};
 use rseed_renderapi::Backend;
 
-pub type Result<T> = std::result::Result<T, BuilderError>;
 
-pub enum BuilderError {
-    NoBackendSelecetd,
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "serde")]
+pub struct ProjectInfo {
+    pub name : String,
+    pub version : Version,
+    pub asset_root : PathBuf,
+    pub main_scene : PathBuf,
+    pub window : Window,
 }
 
-pub struct AppInfo {
-    width: u32,
-    height: u32,
-    name : String,
-    version : Version,
-    backend : Option<Backend>,
-}
-
-impl AppInfo {
-    pub fn new() -> Self {
-        Self {
-            width : 300,
-            height : 300,
-            name : String::from("Default App"),
-            version : Version::new(),
-            backend : None,
-        }
-    }
-
-    pub fn width(self, w : u32) -> Self {
-        self.width = w;
-        self
-    }
-
-    pub fn height(self, h : u32) -> Self {
-        self.hight = h;
-        self
-    }
-
-    pub fn name(self, name : impl Into<String>) -> Self {
-        self.name = name;
-        self
-    }
-
-    pub fn backend(self, be : Backend) -> Self {
-        self.backend = be;
-        self
-    }
-
-    pub fn build(self) -> Result<App> {
-        match self.backend {
-            None => Err(BuilderError::NoBackendSelecetd),
-            Some(_) => Ok(App::new(self.width, self.height, self.name, self.version, self.backend)),
-        }
-    }
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(crate = "serde")]
+pub struct Window {
+    pub title : String,
+    pub width: u32,
+    pub height: u32,
+    pub visible : bool,
+    pub resizable : bool,
+    pub render_backend : Backend,
 }

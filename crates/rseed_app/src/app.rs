@@ -1,9 +1,14 @@
 use std::str::FromStr;
 
 use rseed_log::Logger;
-use rseed_core::utils::Version;
+use rseed_core::{
+    prelude::*,
+    utils::Version,
+};
 use rseed_renderer::{Renderer};
 pub use rseed_renderapi::Backend;
+
+use super::ProjectInfo;
 
 use glutin::{
     self,
@@ -23,8 +28,12 @@ use glutin::{
 
 pub type Result<T> = std::result::Result<T, AppError>;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum AppError {
+    #[error(display="Project file not found.")]
+    ProjectFileNotFound,
+    #[error(display="Project file invalid.")]
+    ProjectFileInvalid,
 }
 
 pub struct App {
@@ -35,6 +44,39 @@ pub struct App {
 }
 
 impl App {
+
+    pub fn from_toml_config() -> Result<Self> {
+        let manifest_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap().as_str());
+        let mut md_contents = std::fs::read_dir(manifest_dir).unwrap();
+
+        let ppf = {
+        md_contents.filter_map(
+                |e| {
+                    e.ok()
+                    .map(
+                        |dir| {
+                            dir.path()
+                        }
+                    )
+                }
+            ).filter(
+                |path| {
+                    Some("toml") == path.extension().map(|e| e.to_str().unwrap())
+                }
+            ).filter(
+                |path| {
+                    path.file_stem().map(|e| e.to_str().unwrap().find(".proj")).flatten().is_some()
+                }
+            )}.next().unwrap();
+        
+        let mut file = std::fs::File::open(ppf).unwrap();
+        let mut contents = Vec::new();
+        std::io::Read::read_to_end(&mut file, &mut contents);
+        let toml = String::from_utf8(contents).unwrap();
+        let proj : ProjectInfo = from_str(toml.as_str()).unwrap();
+        Self::init(proj.window.width, proj.window.height, proj.name, proj.version, proj.window.render_backend)
+    }
+
     pub fn init(width: u32, height: u32, app_name : String, app_version : Version, backend : Backend) -> Result<Self> {
         let logger = Logger::new(String::from_str("RS-eed").unwrap());
         let event_loop = EventLoop::new();
@@ -76,5 +118,3 @@ impl App {
         })
     }
 }
-
-

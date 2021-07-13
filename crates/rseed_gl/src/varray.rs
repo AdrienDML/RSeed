@@ -2,8 +2,8 @@
 use gl;
 use gl::types::*;
 // Crate imports
-use super::IndexBuffer;
-use super::VertexBuffer;
+use super::buffer::IndexBuffer;
+use super::buffer::VertexBuffer;
 
 pub struct VbElements {
     etype: GLenum,

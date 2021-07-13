@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 rseed_core= {path = "../rseed_core"}
+nalgebra = "*"

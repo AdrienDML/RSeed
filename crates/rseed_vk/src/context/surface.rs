@@ -1,11 +1,11 @@
+use rseed_core::prelude::*;
+
 use ash::{self, extensions::khr, vk};
 
 use super::library::*;
 use super::window::{self, HasRawWindowHandle};
 
-use rseed_core::{
-    error::*,
-};
+
 
 #[derive(Debug, Error)]
 pub enum SurfaceError {

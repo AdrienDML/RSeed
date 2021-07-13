@@ -1,5 +1,5 @@
 use crate::color::*;
-use rseed_core::time;
+use rseed_core::utils::get_time;
 use std::fmt::Debug;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -49,7 +49,7 @@ impl Logger {
         println!(
             "\x1B[{}m[{}] {}:{}> {:?} \x1B[{}m",
             self.colorpicker.get_color(level.into()),
-            time::get_time().unwrap(),
+            get_time().unwrap(),
             name,
             level,
             content,

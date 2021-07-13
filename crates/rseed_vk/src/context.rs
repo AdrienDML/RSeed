@@ -1,3 +1,5 @@
+use rseed_core::prelude::*;
+
 pub mod debug;
 pub mod device;
 pub mod library;
@@ -16,7 +18,6 @@ use self::{
 
 use rseed_core::{
     utils::Version,
-    error::*,
 };
 
 #[derive(Debug, Error)]
