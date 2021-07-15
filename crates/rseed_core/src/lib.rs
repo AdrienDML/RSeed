@@ -1,5 +1,6 @@
 pub mod consts;
 pub mod utils;
+mod log;
 
 
 
@@ -17,7 +18,7 @@ pub mod builder {
 
 pub mod serialization {
     pub use serde::{self, Serialize, Deserialize};
-    pub use toml::{from_str, to_string, to_string_pretty};
+    pub use toml::{self,from_str, to_string, to_string_pretty};
 }
 
 pub mod prelude {

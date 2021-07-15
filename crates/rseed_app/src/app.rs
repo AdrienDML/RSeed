@@ -32,8 +32,11 @@ pub type Result<T> = std::result::Result<T, AppError>;
 pub enum AppError {
     #[error(display="Project file not found.")]
     ProjectFileNotFound,
-    #[error(display="Project file invalid.")]
-    ProjectFileInvalid,
+    #[error(display="Project file invalid: {}", _0)]
+    ProjectFileInvalid(rseed_core::serialization::toml::de::Error),
+    #[error(display="Io error: {}", _0)]
+    IoError(std::io::Error)
+
 }
 
 pub struct App {
@@ -47,7 +50,7 @@ impl App {
 
     pub fn from_toml_config() -> Result<Self> {
         let manifest_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap().as_str());
-        let mut md_contents = std::fs::read_dir(manifest_dir).unwrap();
+        let md_contents = std::fs::read_dir(manifest_dir).unwrap();
 
         let ppf = {
         md_contents.filter_map(
@@ -67,13 +70,16 @@ impl App {
                 |path| {
                     path.file_stem().map(|e| e.to_str().unwrap().find(".proj")).flatten().is_some()
                 }
-            )}.next().unwrap();
+            )}.next()
+            .ok_or(AppError::ProjectFileNotFound)?;
         
         let mut file = std::fs::File::open(ppf).unwrap();
         let mut contents = Vec::new();
-        std::io::Read::read_to_end(&mut file, &mut contents);
+        std::io::Read::read_to_end(&mut file, &mut contents)
+            .map_err(|e| AppError::IoError(e))?;
         let toml = String::from_utf8(contents).unwrap();
-        let proj : ProjectInfo = from_str(toml.as_str()).unwrap();
+        let proj : ProjectInfo = from_str(toml.as_str())
+            .map_err(|e| AppError::ProjectFileInvalid(e))?;
         Self::init(proj.window.width, proj.window.height, proj.name, proj.version, proj.window.render_backend)
     }
 

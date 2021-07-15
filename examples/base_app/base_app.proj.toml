@@ -1,0 +1,13 @@
+name = "Sample Project"
+version = "0.0.0"
+asset_root = "asset"
+main_scene = "res/sample.scn.toml"
+
+
+[window]
+title = "Sample"
+height = 300
+width = 600
+resizable = false
+visible = true
+render_backend = "GL"
