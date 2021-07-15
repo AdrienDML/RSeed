@@ -1,0 +1,6 @@
+[book]
+authors = ["AdrienDML"]
+language = "en"
+multilingual = false
+src = "src"
+title = "The Rseed Game Engine."
