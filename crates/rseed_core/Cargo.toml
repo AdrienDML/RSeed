@@ -14,3 +14,5 @@ err-derive = "0.3.0"
 derive_builder = "0.10.2"
 serde = {version = "1.0.126", features = ["derive"]}
 toml = "0.5.8"
+log = "0.4.14"
+fern = "0.6.0"
