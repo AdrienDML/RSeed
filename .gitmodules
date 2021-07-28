@@ -1,3 +1,0 @@
-[submodule "rust-gpu"]
-	path = rust-gpu
-	url = https://github.com/EmbarkStudios/rust-gpu
