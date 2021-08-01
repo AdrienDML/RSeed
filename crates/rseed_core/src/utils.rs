@@ -33,11 +33,11 @@ impl<'de> Visitor<'de> for StringVisitor {
     {
         let mut it = v.split('.');
         let major = str::parse::<u32>(it.next().unwrap_or("0"))
-            .map_err(|e| E::custom(format!("eror wile parsing major")))?;
+            .map_err(|_| E::custom(format!("eror wile parsing major")))?;
         let minor = str::parse::<u32>(it.next().unwrap_or("0"))
-            .map_err(|e| E::custom(format!("eror wile parsing minor")))?;
+            .map_err(|_| E::custom(format!("eror wile parsing minor")))?;
         let patch = str::parse::<u32>(it.next().unwrap_or("0"))
-            .map_err(|e| E::custom(format!("eror wile parsing patch")))?;
+            .map_err(|_| E::custom(format!("eror wile parsing patch")))?;
         Ok(Self::Value {
             major,
             minor,
