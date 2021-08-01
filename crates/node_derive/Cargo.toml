@@ -1,5 +1,5 @@
 [package]
-name = "node_macros"
+name = "node_derive"
 version = "0.1.0"
 authors = ["AdrienDML <adriendml99@gmail.com>"]
 edition = "2018"
@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 proc-macro2 = "1.0.27"
 quote = "1.0.9"
-syn = "1.0.72"
+syn = { version = "1.0.72", features = ["full", "extra-traits", "parsing", "printing"]}
 
 [lib]
 proc-macro = true
