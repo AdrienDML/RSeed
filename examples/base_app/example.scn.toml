@@ -1,0 +1,3 @@
+[node] # a node.
+[external_ressource] # texture, mesh, animations
+[internal_ressource] # engine provided ressources.

@@ -1,0 +1,7 @@
+name = "RootNode"
+type = "Node"
+
+[node]
+name = "ChildNode"
+parent = "."
+type = "Node"
