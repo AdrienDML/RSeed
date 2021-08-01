@@ -1,7 +1,7 @@
 pub mod consts;
 pub mod utils;
 mod log;
-
+pub mod private;
 
 
 // --------------------------
