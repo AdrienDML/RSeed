@@ -1,13 +1,11 @@
 pub use log::{debug, error, info, trace, warn};
 
-struct Logger;
-
 fn setup_logger() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
-                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                crate::utils::get_time().unwrap(),
                 record.target(),
                 record.level(),
                 message
