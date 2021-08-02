@@ -1,4 +1,4 @@
-pub use super::utils::Version;
+pub use super::utils::version::Version;
 
 pub const ENGINE_VERSION: Version = Version {
     major: 0,

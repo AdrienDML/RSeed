@@ -5,7 +5,7 @@ fn setup_logger() -> Result<(), fern::InitError> {
         .format(|out, message, record| {
             out.finish(format_args!(
                 "{}[{}][{}] {}",
-                crate::utils::get_time().unwrap(),
+                crate::utils::time::get_time().unwrap(),
                 record.target(),
                 record.level(),
                 message
