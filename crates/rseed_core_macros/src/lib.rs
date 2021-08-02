@@ -19,3 +19,4 @@ pub fn set_get(input : TokenStream) -> TokenStream {
     impl_
 }
 
+// TODO: Implement the rest of the set_get macros variants.

@@ -1,6 +1,6 @@
-**/target
 .vscode
+**/target
+target/
 **/Cargo.lock
-vendor
 Cargo.lock
 doc/book/**
