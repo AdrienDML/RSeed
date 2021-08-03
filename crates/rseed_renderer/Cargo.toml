@@ -1,0 +1,19 @@
+[package]
+name = "rseed_renderer"
+version = "0.1.0"
+authors = ["AdrienDML <adriendml99@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+glutin = "0.27"
+rseed_core = {path = "../rseed_core"}
+rseed_vk = {path = "../rseed_vk"}
+rseed_gl = {path = "../rseed_gl"}
+rseed_renderapi = {path = "../rseed_renderapi"}
+# rseed_shaderlib = {path = "../rseed_shaderlib"}
+
+raw-window-handle = {version = "0.3.3"}
+
+

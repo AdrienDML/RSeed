@@ -1,0 +1,13 @@
+[package]
+name = "rseed_gl"
+version = "0.1.0"
+authors = ["Adrien <adriendml99@protonmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gl = { path = "gl" }
+glutin = "0.27"
+rseed_core = {path = "../rseed_core"}
+rseed_renderapi = {path = "../rseed_renderapi"}
