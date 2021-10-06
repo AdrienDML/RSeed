@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 glutin = "0.27"
+specs = "0.17"
 rseed_renderer = {path = "../rseed_renderer"}
 rseed_log = {path = "../rseed_log"}
 rseed_core = {path = "../rseed_core"}

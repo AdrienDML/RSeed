@@ -7,7 +7,6 @@ use rseed_core::{
 };
 use rseed_renderer::{Renderer};
 pub use rseed_renderapi::Backend;
-
 use super::ProjectInfo;
 
 use glutin::{
@@ -25,6 +24,7 @@ use glutin::{
         Window
     }
 };
+use specs::{World, WorldExt};
 
 pub type Result<T> = std::result::Result<T, AppError>;
 
@@ -41,9 +41,10 @@ pub enum AppError {
 
 pub struct App {
     pub logger: Logger,
-    pub event_loop: EventLoop<()>,
-    pub renderer: Renderer,
-    pub window: Window,
+    event_loop: EventLoop<()>,
+    renderer: Renderer,
+    window: Window,
+    data: World,
 }
 
 impl App {
@@ -108,9 +109,14 @@ impl App {
             event_loop,
             renderer,
             window,
+            data: World::new(),
         })
     }
 
+    pub fn world(&self) -> &World {
+       &self.data
+    }
+     
     pub fn run(self) {
         self.logger.info(&String::from("The app is running!"));
         let renderer = self.renderer;
